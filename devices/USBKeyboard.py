@@ -2,17 +2,17 @@
 #
 # Contains class definitions to implement a USB keyboard.
 
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
+from USB import USB
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
 from .wrappers import mutable
-from enum import IntEnum
-from struct import pack
+import struct
 
 
-class Requests(IntEnum):
+class Requests(object):
     GET_REPORT = 0x01  # Mandatory
     GET_IDLE = 0x02
     GET_PROTOCOL = 0x03  # Ignored - only for boot device
@@ -104,7 +104,7 @@ class USBKeyboardInterface(USBInterface):
         bNumDescriptors = b'\x01'
         bDescriptorType2 = b'\x22'  # REPORT
         desclen = len(report_descriptor)
-        wDescriptorLength = pack('<H', desclen)
+        wDescriptorLength = struct.pack('<H', desclen)
         hid_descriptor = (
             bDescriptorType +
             bcdHID +
@@ -113,7 +113,7 @@ class USBKeyboardInterface(USBInterface):
             bDescriptorType2 +
             wDescriptorLength
         )
-        bLength = bytes([len(hid_descriptor) + 1])
+        bLength = struct.pack('<B', len(hid_descriptor) + 1)
         hid_descriptor = bLength + hid_descriptor
         return hid_descriptor
 
@@ -185,7 +185,7 @@ class USBKeyboardInterface(USBInterface):
             self.call_count += 1
 
     def type_letter(self, letter, modifiers=0):
-        data = bytes([0, 0, ord(letter)])
+        data = struct.pack('<BBB', 0, 0, ord(letter))
         self.logger.verbose(self.name, "sending keypress 0x%02x" % ord(letter))
         self.configuration.device.app.send_on_endpoint(2, data)
 

@@ -44,7 +44,7 @@ class USBEndpoint(USBBaseActor):
 
         .. note:: OUT endpoint is 1, IN endpoint is either 2 or 3
         '''
-        super().__init__(app, verbose)
+        super(USBEndpoint, self).__init__(app, verbose)
         self.app = app
         self.number = number
         self.direction = direction

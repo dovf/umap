@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 '''
 Umap & Kitty integration
 This script initializes and runs the USB device stack

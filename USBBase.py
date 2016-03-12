@@ -1,6 +1,10 @@
 '''
 Common functionality for all USB actors (interface, class, etc.)
 '''
+import time
+
+
+start_time = time.time()
 
 
 class _MyLogger(object):
@@ -11,7 +15,7 @@ class _MyLogger(object):
 
     def log(self, level, prefix, *args, **kwargs):
         if level <= self.level:
-            print('[%s][%s]' % (prefix, self.name), *args, **kwargs)
+            print('[%s][%10.4f][%s] %s' % (prefix, time.time() - start_time, self.name, ''.join(str(a) for a in args)))
 
     def always(self, *args, **kwargs):
         self.log(0, 'A', *args, **kwargs)

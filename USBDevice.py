@@ -3,9 +3,8 @@
 # Contains class definitions for USBDevice and USBDeviceRequest.
 
 import traceback
-from struct import unpack
+import struct
 from USB import USB
-from USBClass import *
 from USBBase import USBBaseActor
 from devices.wrappers import mutable
 
@@ -19,7 +18,7 @@ class USBDevice(USBBaseActor):
             device_rev, manufacturer_string, product_string,
             serial_number_string, configurations=[], descriptors={},
             verbose=0):
-        super().__init__(app, verbose)
+        super(USBDevice, self).__init__(app, verbose)
         self.supported_device_class_trigger = False
         self.supported_device_class_count = 0
 
@@ -211,7 +210,8 @@ class USBDevice(USBBaseActor):
 
         if not handler:
             self.logger.error('request not handled', req)
-            self.logger.debug('handler entity: %s' % (type(handler_entity)))
+            self.logger.debug('handler entity type: %s' % (type(handler_entity)))
+            self.logger.debug('handler entity: %s' % (handler_entity))
 
             if self.app.mode == 2 or self.app.mode == 3:
 
@@ -296,14 +296,14 @@ class USBDevice(USBBaseActor):
 
     # USB 2.0 specification, section 9.4.3 (p 281 of pdf)
     def handle_get_descriptor_request(self, req):
-        dtype  = (req.value >> 8) & 0xff
+        dtype = (req.value >> 8) & 0xff
         dindex = req.value & 0xff
-        lang   = req.index
-        n      = req.length
+        lang = req.index
+        n = req.length
 
         response = None
 
-        trace = "Dev:GetDes:%d:%d" % (dtype,dindex)
+        trace = "Dev:GetDes:%d:%d" % (dtype, dindex)
         self.app.fingerprint.append(trace)
 
         self.logger.verbose(("received GET_DESCRIPTOR req %d, index %d, " + "language 0x%04x, length %d") % (dtype, dindex, lang, n))
@@ -319,7 +319,7 @@ class USBDevice(USBBaseActor):
             self.app.send_on_endpoint(0, response[:n])
             self.app.verbose -= 1
 
-            self.logger.notify("sent", n, "bytes in response")
+            self.logger.notify("sent %d bytes in response" % n)
         else:
             self.app.stall_ep0()
 
@@ -335,12 +335,13 @@ class USBDevice(USBBaseActor):
 
     @mutable('string_descriptor_zero')
     def get_string0_descriptor(self):
-        d = bytes([
+        d = struct.pack(
+            '<BBBB',
             4,      # length of descriptor in bytes
             3,      # descriptor type 3 == string
             9,      # language code 0, byte 0
             4       # language code 0, byte 1
-        ])
+        )
         return d
 
     @mutable('string_descriptor')
@@ -357,10 +358,11 @@ class USBDevice(USBBaseActor):
         # FreeBSD is okay without it
         s = s[2:]
 
-        d = bytearray([
-                len(s) + 2,     # length of descriptor in bytes
-                3               # descriptor type 3 == string
-        ])
+        d = struct.pack(
+            '<BB',
+            len(s) + 2,  # length of descriptor in bytes
+            3            # descriptor type 3 == string
+        )
         return d + s
 
     def handle_get_string_descriptor_request(self, num):
@@ -380,17 +382,17 @@ class USBDevice(USBBaseActor):
         DeviceRemovable = 0
         PortPwrCtrlMask = 0xff
 
-        hub_descriptor = bytes([
-            bLength,                        # length of descriptor in bytes
-            bDescriptorType,                # descriptor type 0x29 == hub
-            bNbrPorts,                      # number of physical ports
-            wHubCharacteristics & 0xff ,    # hub characteristics
-            (wHubCharacteristics >> 8) & 0xff,
-            bPwrOn2PwrGood,                 # time from power on til power good
-            bHubContrCurrent,               # max current required by hub controller
+        hub_descriptor = struct.pack(
+            '<BBBHBBBB',
+            bLength,              # length of descriptor in bytes
+            bDescriptorType,      # descriptor type 0x29 == hub
+            bNbrPorts,            # number of physical ports
+            wHubCharacteristics,  # hub characteristics
+            bPwrOn2PwrGood,       # time from power on til power good
+            bHubContrCurrent,     # max current required by hub controller
             DeviceRemovable,
             PortPwrCtrlMask
-        ])
+        )
 
         return hub_descriptor
 
@@ -465,10 +467,13 @@ class USBDevice(USBBaseActor):
 class USBDeviceRequest:
     def __init__(self, raw_bytes):
         """Expects raw 8-byte setup data request packet"""
-
-        self.request_type = raw_bytes[0]
-        self.request = raw_bytes[1]
-        self.value, self.index, self.length = unpack('<HHH', raw_bytes[2:8])
+        (
+            self.request_type,
+            self.request,
+            self.value,
+            self.index,
+            self.length
+        ) = struct.unpack('<BBHHH', raw_bytes[:8])
         self.data = raw_bytes[8:]
         self.raw_bytes = raw_bytes
 
@@ -480,12 +485,14 @@ class USBDeviceRequest:
 
     def raw(self):
         """returns request as bytes"""
-        b = bytes([
-            self.request_type, self.request,
-            (self.value >> 8) & 0xff, self.value & 0xff,
-            (self.index >> 8) & 0xff, self.index & 0xff,
-            (self.length >> 8) & 0xff, self.length & 0xff
-        ])
+        b = struct.pack(
+            '<BBHHH',
+            self.request_type,
+            self.request,
+            self.value >> 8,
+            self.index >> 8,
+            self.length >> 8,
+        )
         return b
 
     def get_direction(self):

@@ -1,11 +1,11 @@
 # USBVendorSpecific.py
 #
 
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
 from USBVendor import *
 
 

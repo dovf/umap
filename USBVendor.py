@@ -12,7 +12,7 @@ class USBVendor(USBBaseActor):
     request_handlers = {}
 
     def __init__(self, app, verbose=0):
-        super().__init__(app, verbose)
+        super(USBVendor, self).__init__(app, verbose)
         self.device = None
         self.setup_request_handlers()
 

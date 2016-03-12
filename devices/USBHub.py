@@ -2,11 +2,12 @@
 #
 # Contains class definitions to implement a USB hub.
 from struct import pack
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
+from USB import USB
 from .wrappers import mutable
 
 

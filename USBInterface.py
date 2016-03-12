@@ -2,9 +2,10 @@
 #
 # Contains class definition for USBInterface.
 
-from USB import *
+from USB import USB, interface_class_to_descriptor_type
 from USBBase import USBBaseActor
 from devices.wrappers import mutable
+import struct
 
 
 class USBInterface(USBBaseActor):
@@ -15,7 +16,7 @@ class USBInterface(USBBaseActor):
         interface_subclass, interface_protocol, interface_string_index,
         verbose=0, endpoints=None, descriptors=None, cs_interfaces=None
     ):
-        super().__init__(app, verbose)
+        super(USBInterface, self).__init__(app, verbose)
         self.number = interface_number
         self.alternate = interface_alternate
         self.iclass = interface_class
@@ -78,7 +79,7 @@ class USBInterface(USBBaseActor):
         self.logger.debug("received SET_INTERFACE request")
 
         self.configuration.device.app.stall_ep0()
-        #self.configuration.device.app.send_on_endpoint(0, b'')
+        # self.configuration.device.app.send_on_endpoint(0, b'')
 
     # Table 9-12 of USB 2.0 spec (pdf page 296)
     @mutable('interface_descriptor')
@@ -88,20 +89,21 @@ class USBInterface(USBBaseActor):
         bDescriptorType = 4
         bNumEndpoints = len(self.endpoints)
 
-        d = bytearray([
-                bLength,          # length of descriptor in bytes
-                bDescriptorType,          # descriptor type 4 == interface
-                self.number,
-                self.alternate,
-                bNumEndpoints,
-                self.iclass,
-                self.subclass,
-                self.protocol,
-                self.string_index
-        ])
+        d = struct.pack(
+            '<BBBBBBBBB',
+            bLength,          # length of descriptor in bytes
+            bDescriptorType,  # descriptor type 4 == interface
+            self.number,
+            self.alternate,
+            bNumEndpoints,
+            self.iclass,
+            self.subclass,
+            self.protocol,
+            self.string_index
+        )
 
         if self.iclass:
-            iclass_desc_num = USB.interface_class_to_descriptor_type(self.iclass)
+            iclass_desc_num = interface_class_to_descriptor_type(self.iclass)
             if iclass_desc_num:
                 desc = self.descriptors[iclass_desc_num]
                 if callable(desc):

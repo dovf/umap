@@ -8,20 +8,18 @@
 '''
 from mmap import mmap
 import os
-from struct import pack, unpack
-from enum import IntEnum
+import struct
+from binascii import hexlify
 
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
-from USBClass import *
-from util import *
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
+from USBClass import USBClass
 from .wrappers import mutable
 
 
-class ScsiCmds(IntEnum):
+class ScsiCmds(object):
     TEST_UNIT_READY = 0x00
     REQUEST_SENSE = 0x03
     READ_6 = 0x08
@@ -39,7 +37,7 @@ class ScsiCmds(IntEnum):
     MODE_SENSE_10 = 0x5A
 
 
-class ScsiSenseKeys(IntEnum):
+class ScsiSenseKeys(object):
     GOOD = 0x00
     RECOVERED_ERROR = 0x01
     NOT_READY = 0x02
@@ -163,7 +161,7 @@ class USBMassStorageInterface(USBInterface):
 
     @mutable('scsi_inquiry_response')
     def handle_inquiry(self, cbw):
-        self.logger.debug('got SCSI Inquiry, data', bytes_as_hex(cbw.cb[1:]))
+        self.logger.debug('got SCSI Inquiry, data: %s' % hexlify(cbw.cb[1:]))
         peripheral = 0x00  # SBC
         RMB = 0x80  # Removable
         version = 0x00
@@ -173,15 +171,15 @@ class USBMassStorageInterface(USBInterface):
         product_id = b'USB 2.0 FD      '
         product_revision_level = b'8.02'
 
-        part1 = pack('BBBB', peripheral, RMB, version, response_data_format)
-        part2 = pack('BBB', *config) + vendor_id + product_id + product_revision_level
-        length = pack('B', len(part2))
+        part1 = struct.pack('BBBB', peripheral, RMB, version, response_data_format)
+        part2 = struct.pack('BBB', *config) + vendor_id + product_id + product_revision_level
+        length = struct.pack('B', len(part2))
         response = part1 + length + part2
         return response
 
     @mutable('scsi_request_sense_response')
     def handle_request_sense(self, cbw):
-        self.logger.debug("got SCSI Request Sense, data", bytes_as_hex(cbw.cb[1:]))
+        self.logger.debug("got SCSI Request Sense, data: %s" % hexlify(cbw.cb[1:]))
         response_code = 0x70
         valid = 0x00
         filemark = 0x06
@@ -192,8 +190,8 @@ class USBMassStorageInterface(USBInterface):
         field_replacement_unti_code = 0x00
         sense_key_specific = b'\x00\x00\x00'
 
-        part1 = pack('<BBBI', response_code, valid, filemark, information)
-        part2 = pack(
+        part1 = struct.pack('<BBBI', response_code, valid, filemark, information)
+        part2 = struct.pack(
             '<IBBB',
             command_info,
             additional_sense_code,
@@ -201,7 +199,7 @@ class USBMassStorageInterface(USBInterface):
             field_replacement_unti_code
         )
         part2 += sense_key_specific
-        length = pack('B', len(part2))
+        length = struct.pack('B', len(part2))
         response = part1 + length + part2
         return response
 
@@ -211,11 +209,11 @@ class USBMassStorageInterface(USBInterface):
 
     @mutable('scsi_read_capacity_10_response')
     def handle_read_capacity_10(self, cbw):
-        self.logger.debug("got SCSI Read Capacity, data", bytes_as_hex(cbw.cb[1:]))
+        self.logger.debug("got SCSI Read Capacity, data: %s" % hexlify(cbw.cb[1:]))
         lastlba = self.disk_image.get_sector_count()
-        logical_block_address = pack('>I', lastlba)
+        logical_block_address = struct.pack('>I', lastlba)
         length = 0x00000200
-        response = logical_block_address + pack('>I', length)
+        response = logical_block_address + struct.pack('>I', length)
         return response
 
     @mutable('scsi_send_diagnostic_response')
@@ -228,10 +226,10 @@ class USBMassStorageInterface(USBInterface):
 
     @mutable('scsi_write_10_response')
     def handle_write_10(self, cbw):
-        self.logger.debug("got SCSI Write (10), data", bytes_as_hex(cbw.cb[1:]))
+        self.logger.debug("got SCSI Write (10), data: %s" % hexlify(cbw.cb[1:]))
 
-        base_lba = unpack('>I', cbw.cb[1:5])[0]
-        num_blocks = unpack('>H', cbw.cb[7:9])[0]
+        base_lba = struct.unpack('>I', cbw.cb[1:5])[0]
+        num_blocks = struct.unpack('>H', cbw.cb[7:9])[0]
 
         self.logger.debug("got SCSI Write (10), lba", base_lba, "+",  num_blocks, "block(s)")
 
@@ -249,8 +247,8 @@ class USBMassStorageInterface(USBInterface):
         if self.app.mode == 4:
             self.app.stop = True
 
-        base_lba = unpack('>I', cbw.cb[2:6])[0]
-        num_blocks = unpack('>H', cbw.cb[7:9])[0]
+        base_lba = struct.unpack('>I', cbw.cb[2:6])[0]
+        num_blocks = struct.unpack('>H', cbw.cb[7:9])[0]
 
         self.logger.debug("got SCSI Read (10), lba", base_lba, "+", num_blocks, "block(s)")
 
@@ -282,9 +280,9 @@ class USBMassStorageInterface(USBInterface):
             device_specific_param = 0x00
             block_descriptor_len = 0x00
             mode_page_1c = b'\x1c\x06\x00\x05\x00\x00\x00\x00'
-            body = pack('BBB', medium_type, device_specific_param, block_descriptor_len)
+            body = struct.pack('BBB', medium_type, device_specific_param, block_descriptor_len)
             body += mode_page_1c
-            length = pack('<B', len(body))
+            length = struct.pack('<B', len(body))
             response = length + body
 
         elif page == 0x3f:
@@ -293,14 +291,14 @@ class USBMassStorageInterface(USBInterface):
             device_specific_param = 0x00
             block_descriptor_len = 0x08
             mode_page = 0x00000000
-            response = pack('<BBBBI', length, medium_type, device_specific_param, block_descriptor_len, mode_page)
+            response = struct.pack('<BBBBI', length, medium_type, device_specific_param, block_descriptor_len, mode_page)
         else:
             length = 0x07
             medium_type = 0x00
             device_specific_param = 0x00
             block_descriptor_len = 0x00
             mode_page = 0x00000000
-            response = pack('<BBBBI', length, medium_type, device_specific_param, block_descriptor_len, mode_page)
+            response = struct.pack('<BBBBI', length, medium_type, device_specific_param, block_descriptor_len, mode_page)
         return response
 
     @mutable('scsi_mode_sense_6_response')
@@ -315,18 +313,18 @@ class USBMassStorageInterface(USBInterface):
     def handle_read_format_capacities(self, cbw):
         self.logger.debug("got SCSI Read Format Capacity")
         # header
-        response = pack('>I', 8)
+        response = struct.pack('>I', 8)
         num_sectors = 0x1000
         reserved = 0x1000
         sector_size = 0x200
-        response += pack('>IHH', num_sectors, reserved, sector_size)
+        response += struct.pack('>IHH', num_sectors, reserved, sector_size)
         return response
 
     def handle_synchronize_cache(self, cbw):
         self.logger.debug("got Synchronize Cache (10)")
 
     def handle_data_available(self, data):
-        self.logger.debug("handling", len(data), "bytes of SCSI data")
+        self.logger.debug("handling %d bytes of SCSI data" % (len(data)))
         self.supported()
         cbw = CommandBlockWrapper(data)
         opcode = cbw.cb[0]
@@ -346,7 +344,7 @@ class USBMassStorageInterface(USBInterface):
                     break
 
         elif self.is_write_in_progress:
-            self.logger.debug("got", len(data), "bytes of SCSI write data")
+            self.logger.debug("got %d bytes of SCSI write data" % (len(data)))
 
             self.write_data += data
 
@@ -375,18 +373,19 @@ class USBMassStorageInterface(USBInterface):
             self.logger.warning(self.name, "received unsupported SCSI opcode 0x%x" % opcode)
             status = 0x02   # command failed
             if cbw.data_transfer_length > 0:
-                response = bytes([0] * cbw.data_transfer_length)
+                response = b'\x00' * cbw.data_transfer_length
 
         if response and not self.app.server_running:
-            self.logger.notify(self.name, "responding with", len(response), "bytes:", bytes_as_hex(response))
+            self.logger.notify(self.name, "responding with %d bytes: %s" % (len(response), hexlify(response)))
             self.configuration.device.app.send_on_endpoint(3, response)
 
-        csw = bytes([
-            ord('U'), ord('S'), ord('B'), ord('S'),
+        csw = b'USBS'
+        csw += struct.pack(
+            '<BBBBBBBBB',
             cbw.tag[0], cbw.tag[1], cbw.tag[2], cbw.tag[3],
             0x00, 0x00, 0x00, 0x00,
             status
-        ])
+        )
 
         self.logger.verbose(self.name, "responding with status =", status)
 
@@ -429,7 +428,7 @@ class CommandBlockWrapper:
     def __init__(self, bytestring):
         self.signature = bytestring[0:4]
         self.tag = bytestring[4:8]
-        self.data_transfer_length = unpack('<I', bytestring[8:12])[0]
+        self.data_transfer_length = struct.unpack('<I', bytestring[8:12])[0]
         self.flags = int(bytestring[12])
         self.lun = int(bytestring[13] & 0x0f)
         self.cb_length = int(bytestring[14] & 0x1f)
@@ -437,14 +436,13 @@ class CommandBlockWrapper:
         self.cb = bytestring[15:]
 
     def __str__(self):
-        s = "sig: " + bytes_as_hex(self.signature) + "\n"
-        s += "tag: " + bytes_as_hex(self.tag) + "\n"
-        s += "data transfer len: " + str(self.data_transfer_length) + "\n"
-        s += "flags: " + str(self.flags) + "\n"
-        s += "lun: " + str(self.lun) + "\n"
-        s += "command block len: " + str(self.cb_length) + "\n"
-        s += "command block: " + bytes_as_hex(self.cb) + "\n"
-
+        s = "sig: %s\n" % hexlify(self.signature)
+        s += "tag: %s\n" % hexlify(self.tag)
+        s += "data transfer len: %s\n" % self.data_transfer_length
+        s += "flags: %s\n" % self.flags
+        s += "lun: %s\n" % self.lun
+        s += "command block len: %s\n" % self.cb_length
+        s += "command block: %s\n" % hexlify(self.cb)
         return s
 
 

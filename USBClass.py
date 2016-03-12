@@ -13,7 +13,7 @@ class USBClass(USBBaseActor):
     request_handlers = {}
 
     def __init__(self, app, verbose=0):
-        super().__init__(app, verbose)
+        super(USBClass, self).__init__(app, verbose)
         self.interface = None
         self.setup_request_handlers()
 

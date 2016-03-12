@@ -1,23 +1,22 @@
 # USBCSInterface.py
 #
 # Contains class definition for USBCSInterface.
-
-from USB import *
+from USB import USB
 from USBBase import USBBaseActor
 from devices.wrappers import mutable
+import struct
 
 
 class USBCSInterface(USBBaseActor):
     name = "USB class-specific interface"
 
     def __init__(self, app, cs_config, usbclass, sub, proto, verbose=0, descriptors={}):
-        super().__init__(app, verbose)
+        super(USBCSInterface, self).__init__(app, verbose)
         self.usbclass = usbclass
         self.sub = sub
         self.proto = proto
         self.cs_config = cs_config
         self.descriptors = descriptors
-
         self.descriptors[USB.desc_type_cs_interface] = self.get_descriptor
 
         self.request_handlers = {
@@ -81,7 +80,7 @@ class USBCSInterface(USBBaseActor):
                     (bcdCDC >> 8) & 0xff,
                     bcdCDC & 0xff,
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d)+1)
             d = config_length + d
 
 
@@ -97,7 +96,7 @@ class USBCSInterface(USBBaseActor):
                     bmCapabilities,
                     bDataInterface
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d)+1)
             d = config_length + d
 
 
@@ -111,7 +110,7 @@ class USBCSInterface(USBBaseActor):
                     bDescriptorSubtype,
                     bmCapabilities
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -127,7 +126,7 @@ class USBCSInterface(USBBaseActor):
                     bControlInterface,
                     bSubordinateInterface
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -154,7 +153,7 @@ class USBCSInterface(USBBaseActor):
                     wNumberMCFilters & 0xff,
                     bNumberPowerFilters
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -180,7 +179,7 @@ class USBCSInterface(USBBaseActor):
                     baInterfaceNr1,
                     baInterfaceNr2
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -208,7 +207,7 @@ class USBCSInterface(USBBaseActor):
                     iChannelNames,
                     iTerminal
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -231,7 +230,7 @@ class USBCSInterface(USBBaseActor):
                     bSourceID,
                     iTerminal
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -257,7 +256,7 @@ class USBCSInterface(USBBaseActor):
                     bmaControls2,
                     iFeature
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -276,7 +275,7 @@ class USBCSInterface(USBBaseActor):
                     wFormatTag & 0xff,
                     (wFormatTag >> 8) & 0xff,
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
 
@@ -306,7 +305,7 @@ class USBCSInterface(USBBaseActor):
                     (tSamFreq2 >> 8) & 0xff,
                     tSamFreq2 & 0xff
             ])
-            config_length = bytes ([len(d)+1])
+            config_length = struct.pack('<B', len(d) + 1)
             d = config_length + d
 
         ############################# end Audio class ##########################################

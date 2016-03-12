@@ -8,17 +8,17 @@
 
 # This devbice doesn't work properly yet!!!!!
 
-from struct import pack
-from enum import IntEnum
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
+import struct
+from USB import USB
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
 from .wrappers import mutable
 
 
-class ClassRequests(IntEnum):
+class ClassRequests(object):
     ABORT = 0x01
     GET_CLOCK_FREQUENCIES = 0x02
     GET_DATA_RATES = 0x03
@@ -37,55 +37,55 @@ class USBSmartcardClass(USBClass):
     @mutable('get_clock_frequencies_response')
     def handle_get_clock_frequencies(self, req):
         response = ''
-        for frequency in interface.clock_frequencies:
-            response += pack('<I', frequency)
-        response = pack('<I', len(response)) + response
+        for frequency in self.interface.clock_frequencies:
+            response += struct.pack('<I', frequency)
+        response = struct.pack('<I', len(response)) + response
         return response
 
     @mutable('get_data_rates_response')
     def handle_get_data_rates(self, req):
         response = ''
-        for data_rate in interface.data_rates:
-            response += pack('<I', data_rate)
-        response = pack('<I', len(response)) + response
+        for data_rate in self.interface.data_rates:
+            response += struct.pack('<I', data_rate)
+        response = struct.pack('<I', len(response)) + response
         return response
 
 
 def R2P_Parameters(slot, seq, status, error, proto, data):
     length = len(data)
-    response = pack('<BIBBBBB', RdrToPc.Parameters, length, slot, seq, status, error, proto)
+    response = struct.pack('<BIBBBBB', RdrToPc.Parameters, length, slot, seq, status, error, proto)
     response += data
     return response
 
 
 def R2P_DataBlock(slot, seq, status, error, chain_param, data):
     length = len(data)
-    response = pack('<BIBBBBBB', RdrToPc.DataBlock, length, slot, seq, status, error, chain_param, proto)
+    response = struct.pack('<BIBBBBB', RdrToPc.DataBlock, length, slot, seq, status, error, chain_param)
     response += data
     return response
 
 
 def R2P_SlotStatus(slot, seq, status, error, clock_status):
-    response = pack('<BIBBBBB', RdrToPc.SlotStatus, 0, slot, seq, status, error, clock_status)
+    response = struct.pack('<BIBBBBB', RdrToPc.SlotStatus, 0, slot, seq, status, error, clock_status)
     return response
 
 
 def R2P_Escape(slot, seq, status, error, data):
     length = len(data)
-    response = pack('<BIBBBBB', RdrToPc.Escape, length, slot, seq, status, error, 0)
+    response = struct.pack('<BIBBBBB', RdrToPc.Escape, length, slot, seq, status, error, 0)
     response += data
     return response
 
 
 def R2P_DataRateAndClockFrequency(slot, seq, status, error, freq, rate):
-    data = pack('<II', freq, rate)
+    data = struct.pack('<II', freq, rate)
     length = len(data)
-    response = pack('<BIBBBBB', RdrToPc.DataRateAndClock_Frequency, length, slot, seq, status, error, 0)
+    response = struct.pack('<BIBBBBB', RdrToPc.DataRateAndClock_Frequency, length, slot, seq, status, error, 0)
     response += data
     return response
 
 
-class PcToRdrOpcode(IntEnum):
+class PcToRdrOpcode(object):
     IccPowerOn = 0x62
     IccPowerOff = 0x63
     GetSlotStatus = 0x65
@@ -102,7 +102,7 @@ class PcToRdrOpcode(IntEnum):
     SetDataRateAndClock_Frequency = 0x73
 
 
-class RdrToPc(IntEnum):
+class RdrToPc(object):
     DataBlock = 0x80
     SlotStatus = 0x81
     Parameters = 0x82
@@ -337,7 +337,7 @@ class USBSmartcardInterface(USBInterface):
 
     @mutable('smartcard_T0APDU_response')
     def handle_PcToRdr_T0APDU(self, slot, seq, data):
-        # bmChange, bClassGetResponse, bClassEnvelope = unpack('<BBB', data[7:10])
+        # bmChange, bClassGetResponse, bClassEnvelope = struct.unpack('<BBB', data[7:10])
         return R2P_SlotStatus(
             slot=slot,
             seq=seq,
@@ -351,7 +351,7 @@ class USBSmartcardInterface(USBInterface):
         '''
         .. todo:: to complete that, go over section 6.1.11
         '''
-        bBWI, wLevelParameter = unpack('<BH')
+        bBWI, wLevelParameter = struct.unpack('<BH')
         return R2P_DataBlock(
             slot=slot,
             seq=seq,
@@ -389,7 +389,7 @@ class USBSmartcardInterface(USBInterface):
 
     @mutable('smartcard_SetDataRateAndClock_Frequency_response')
     def handle_PcToRdr_SetDataRateAndClock_Frequency(self, slot, seq, data):
-        self.clock_freq, self.data_rate = unpack('<II', data[10:18])
+        self.clock_freq, self.data_rate = struct.unpack('<II', data[10:18])
         return R2P_DataRateAndClockFrequency(
             slot=slot,
             seq=seq,
@@ -423,7 +423,7 @@ class USBSmartcardInterface(USBInterface):
         bPinSupport = 0x00
         bMaxCCIDBusySlots = 0x01
 
-        response = pack(
+        response = struct.pack(
             '<BHBBIIIBIIBIIIIIBBHBB',
             bDescriptorType,
             bcdCCID,
@@ -448,12 +448,12 @@ class USBSmartcardInterface(USBInterface):
             bMaxCCIDBusySlots
         )
 
-        response = pack('B', len(response) + 1) + response
+        response = struct.pack('B', len(response) + 1) + response
         return response
 
     def handle_data_available(self, data):
         self.supported()
-        opcode, length, slot, seq = unpack('<BIBB', data[:7])
+        opcode, length, slot, seq = struct.unpack('<BIBB', data[:7])
         if self.app.server_running:
             try:
                 self.app.netserver_from_endpoint_sd.send(data)

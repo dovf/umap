@@ -2,13 +2,13 @@
 #
 # Contains class definitions to implement a USB CDC device.
 
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBCSInterface import *
-from USBEndpoint import *
-from USBCSEndpoint import *
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
+from USBCSInterface import USBCSInterface
+from USBCSEndpoint import USBCSEndpoint
 
 
 class USBCDCClass(USBClass):
@@ -21,10 +21,10 @@ class USBCDCClass(USBClass):
 
     def setup_request_handlers(self):
         self.request_handlers = {
-            0x00 : self.handle_send_encapsulated_command,
-            0x01 : self.handle_get_encapsulated_response,
-            0x22 : self.handle_set_control_line_state,
-            0x20 : self.handle_set_line_coding
+            0x00: self.handle_send_encapsulated_command,
+            0x01: self.handle_get_encapsulated_response,
+            0x22: self.handle_set_control_line_state,
+            0x20: self.handle_set_line_coding
         }
 
     def handle_set_control_line_state(self, req):

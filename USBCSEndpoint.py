@@ -9,7 +9,7 @@ from devices.wrappers import mutable
 class USBCSEndpoint(USBBaseActor):
 
     def __init__(self, app, cs_config, verbose=0):
-        super().__init__(app, verbose)
+        super(USBCSEndpoint, self).__init__(app, verbose)
         self.cs_config = cs_config
         self.number = self.cs_config[1]
         self.interface = None

@@ -9,7 +9,7 @@ from devices.wrappers import mutable
 class USBConfiguration(USBBaseActor):
 
     def __init__(self, app, configuration_index, configuration_string, interfaces, verbose=0):
-        super().__init__(app, verbose)
+        super(USBConfiguration, self).__init__(app, verbose)
         self.configuration_index = configuration_index
         self.configuration_string = configuration_string
         self.configuration_string_index = 0
@@ -30,7 +30,7 @@ class USBConfiguration(USBBaseActor):
         self.configuration_string_index = i
 
     def get_string_by_id(self, str_id):
-        s = super().get_string_by_id(str_id)
+        s = super(USBConfiguration, self).get_string_by_id(str_id)
         if not s:
             for iface in self.interfaces:
                 s = iface.get_string_by_id(str_id)
@@ -40,7 +40,7 @@ class USBConfiguration(USBBaseActor):
 
     @mutable('configuration_descriptor')
     def get_descriptor(self):
-        interface_descriptors = bytearray()
+        interface_descriptors = b''
         for i in self.interfaces:
             interface_descriptors += i.get_descriptor()
         bLength = 9

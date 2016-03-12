@@ -2,14 +2,14 @@
 #
 # Contains class definitions for Facedancer, FacedancerCommand, FacedancerApp,
 # and GoodFETMonitorApp.
+import struct
+from binascii import hexlify
 
-from util import *
 
 class Facedancer:
     def __init__(self, serialport, verbose=0):
         self.serialport = serialport
         self.verbose = verbose
-
         self.reset()
         self.monitor_app = GoodFETMonitorApp(self, verbose=self.verbose)
         self.monitor_app.announce_connected()
@@ -24,34 +24,25 @@ class Facedancer:
 
         self.halt()
         self.serialport.setDTR(0)
-
-        c = self.readcmd()
+        self.readcmd()
 
         if self.verbose > 0:
             print("Facedancer reset")
 
     def read(self, n):
         """Read raw bytes."""
-
         b = self.serialport.read(n)
-
         if self.verbose > 4:
-            print("Facedancer received", len(b), "bytes;",
-                    self.serialport.inWaiting(), "bytes remaining")
-
+            print("Facedancer received %s bytes; %s bytes remaining" % (len(b), self.serialport.inWaiting()))
         if self.verbose > 5:
-            print("Facedancer Rx:", bytes_as_hex(b))
-
+            print("Facedancer Rx:", hexlify(b))
         return b
 
     def readcmd(self):
         """Read a single command."""
 
         b = self.read(4)
-
-        app = b[0]
-        verb = b[1]
-        n = b[2] + (b[3] << 8)
+        app, verb, n = struct.unpack('<BBH', b)
 
         if n > 0:
             data = self.read(n)
@@ -59,13 +50,12 @@ class Facedancer:
             data = b''
 
         if len(data) != n:
-            raise ValueError('Facedancer expected ' + str(n) \
-                    + ' bytes but received only ' + str(len(data)))
+            raise ValueError('Facedancer expected %d bytes but received only %d' % (n, len(data)))
 
         cmd = FacedancerCommand(app, verb, data)
 
         if self.verbose > 4:
-            print("Facedancer Rx command:", cmd)
+            print("Facedancer Rx command: %s" % cmd)
 
         return cmd
 
@@ -73,7 +63,7 @@ class Facedancer:
         """Write raw bytes."""
 
         if self.verbose > 5:
-            print("Facedancer Tx:", bytes_as_hex(b))
+            print("Facedancer Tx: %s" % hexlify(b))
 
         self.serialport.write(b)
 
@@ -82,7 +72,7 @@ class Facedancer:
         self.write(c.as_bytestring())
 
         if self.verbose > 4:
-            print("Facedancer Tx command:", c)
+            print("Facedancer Tx command: %s" % c)
 
 
 class FacedancerCommand:
@@ -92,37 +82,26 @@ class FacedancerCommand:
         self.data = data
 
     def __str__(self):
-        s = "app 0x%02x, verb 0x%02x, len %d" % (self.app, self.verb,
-                len(self.data))
+        s = "app 0x%02x, verb 0x%02x, len %d" % (self.app, self.verb, len(self.data))
 
         if len(self.data) > 0:
-            s += ", data " + bytes_as_hex(self.data)
+            s += ", data %s" % hexlify(self.data)
 
         return s
 
     def long_string(self):
-        s = "app: " + str(self.app) + "\n" \
-          + "verb: " + str(self.verb) + "\n" \
-          + "len: " + str(len(self.data))
+        s = "app: %s\nverb: %s\nlen: %s" % (self.app, self.verb, len(self.data))
 
         if len(self.data) > 0:
             try:
                 s += "\n" + self.data.decode("utf-8")
             except UnicodeDecodeError:
-                s += "\n" + bytes_as_hex(self.data)
+                s += "\n" + hexlify(self.data)
 
         return s
 
     def as_bytestring(self):
-        n = len(self.data)
-
-        b = bytearray(n + 4)
-        b[0] = self.app
-        b[1] = self.verb
-        b[2] = n & 0xff
-        b[3] = n >> 8
-        b[4:] = self.data
-
+        b = struct.pack('<BBH', self.app, self.verb, len(self.data)) + self.data
         return b
 
 
@@ -156,26 +135,26 @@ class GoodFETMonitorApp(FacedancerApp):
     app_num = 0x00
 
     def read_byte(self, addr):
-        d = [ addr & 0xff, addr >> 8 ]
+        d = [addr & 0xff, addr >> 8]
         cmd = FacedancerCommand(0, 2, d)
 
         self.device.writecmd(cmd)
         resp = self.device.readcmd()
 
-        return resp.data[0]
+        return struct.unpack('<B', resp.data[0:1])[0]
 
     def get_infostring(self):
-        return bytes([ self.read_byte(0xff0), self.read_byte(0xff1) ])
+        return struct.pack('<BB', self.read_byte(0xff0), self.read_byte(0xff1))
 
     def get_clocking(self):
-        return bytes([ self.read_byte(0x57), self.read_byte(0x56) ])
+        return struct.pack('<BB', self.read_byte(0x57), self.read_byte(0x56))
 
     def print_info(self):
         infostring = self.get_infostring()
         clocking = self.get_clocking()
 
-        print("MCU", bytes_as_hex(infostring, delim=""))
-        print("clocked at", bytes_as_hex(clocking, delim=""))
+        print("MCU", hexlify(infostring, delim=""))
+        print("clocked at", hexlify(clocking, delim=""))
 
     def list_apps(self):
         cmd = FacedancerCommand(self.app_num, 0x82, b'0x0')
@@ -191,18 +170,7 @@ class GoodFETMonitorApp(FacedancerApp):
                 break
             print(resp.data.decode("utf-8"))
 
-    def echo(self, s):
-        b = bytes(s, encoding="utf-8")
-
-        cmd = FacedancerCommand(self.app_num, 0x81, b)
-        self.device.writecmd(cmd)
-
-        resp = self.device.readcmd()
-
-        return resp.data == b
-
     def announce_connected(self):
         cmd = FacedancerCommand(self.app_num, 0xb1, b'')
         self.device.writecmd(cmd)
-        resp = self.device.readcmd()
-
+        self.device.readcmd()

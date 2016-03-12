@@ -8,16 +8,13 @@
     Should look deeper into the implementation and spec.
 '''
 from mmap import mmap
-from struct import pack, unpack
-from enum import IntEnum
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBEndpoint import *
-from USBClass import *
+import struct
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
+from USBClass import USBClass
 from .wrappers import mutable
-from util import *
 from binascii import hexlify
 
 
@@ -34,7 +31,7 @@ class USBImageClass(USBClass):
         return b''
 
 
-class Opcodes(IntEnum):
+class Opcodes(object):
     GetDeviceInfo = 0x1001
     OpenSession = 0x1002
     CloseSession = 0x1003
@@ -53,7 +50,7 @@ class Opcodes(IntEnum):
     GetPartialObject = 0x101b
 
 
-class Events(IntEnum):
+class Events(object):
     StoredAdded = 0x4004
     StoreRemoved = 0x4005
     DeviceInfoChanged = 0x4008
@@ -151,7 +148,7 @@ class USBImageInterface(USBInterface):
         container_type = 0x03  # Response block
         response_code = 0x2001  # "OK"
         container_length = 0x0000000c  # always this length
-        response = pack('<BHII', container_length, container_type, response_code, transaction_id)
+        response = struct.pack('<BHII', container_length, container_type, response_code, transaction_id)
         return response
 
     def handle_ep2_buffer_available(self):
@@ -182,9 +179,9 @@ class USBImageInterface(USBInterface):
         if opcode in self.operations:
             op1, op2 = self.operations[opcode]
             fuzzing_data = {
-                'opcode': pack('<H', container.opcode),
-                'transaction_id': pack('<I', container.transaction_id),
-                'parameter1': pack('<I', container.parameter1),
+                'opcode': struct.pack('<H', container.opcode),
+                'transaction_id': struct.pack('<I', container.transaction_id),
+                'parameter1': struct.pack('<I', container.parameter1),
             }
             if op1:
                 response = op1(container, fuzzing_data=fuzzing_data)
@@ -193,12 +190,12 @@ class USBImageInterface(USBInterface):
 
         if response and not self.app.server_running:
             self.logger.info('Response: %s' % hexlify(response))
-            self.logger.verbose("responding with", len(response), "bytes:", bytes_as_hex(response))
+            self.logger.verbose("responding with %d bytes: %s" % (len(response), hexlify(response)))
             self.configuration.device.app.send_on_endpoint(2, response)
 
         if response2 and not self.app.server_running:
             self.logger.info('Response2: %s' % hexlify(response2))
-            self.logger.verbose("responding with", len(response2), "bytes:", bytes_as_hex(response2))
+            self.logger.verbose("responding with %d bytes: %s" % (len(response), hexlify(response)))
             self.configuration.device.app.send_on_endpoint(2, response2)
 
     @mutable('image_OpenSession_response1')
@@ -224,13 +221,13 @@ class USBImageInterface(USBInterface):
     @mutable('image_SetDevicePropValue_response2')
     def op_SetDevicePropValue_2(self, container, **kwargs):
         response = None
-        if container_type == 2:  # Data block
+        if container.container_type == 2:  # Data block
             response = self.create_send_ok(container.transaction_id)
         return response
 
     @mutable('image_GetStorageInfo_response1')
     def op_GetStorageInfo_1(self, container, **kwargs):
-        container_type = 0x0002  # Data block
+        container.container_type = 0x0002  # Data block
         operation_code = 0x1005  # GetStorageInfo
         storage_type = 0x0004  # Removable RAM
         filesystem_type = 0x0003  # DCF (Design rule for Camera File system)
@@ -241,11 +238,11 @@ class USBImageInterface(USBInterface):
         storage_description = 0x00
         volume_label = 0x00
 
-        response = pack(
+        response = struct.pack(
             '<HHIHHHQQIBB',
-            container_type,
+            container.container_type,
             operation_code,
-            transaction_id,
+            container.transaction_id,
             storage_type,
             filesystem_type,
             access_capability,
@@ -257,7 +254,7 @@ class USBImageInterface(USBInterface):
         )
 
         container_length = len(response) + 4
-        container_length_bytes = pack('<I', container_length)
+        container_length_bytes = struct.pack('<I', container_length)
 
         response = container_length_bytes + response
         return response
@@ -291,7 +288,7 @@ class USBImageInterface(USBInterface):
         modification_date = encode_string('20130723T110506')
         keywords = b'\x00'  # none
 
-        response = pack(
+        response = struct.pack(
             '<HHIHHIHIIIIIIIHII',
             container_type,
             operation_code,
@@ -313,7 +310,7 @@ class USBImageInterface(USBInterface):
         )
         response += filename + capture_date + modification_date + keywords
         container_length = len(response) + 4
-        response = pack('<I', container_length) + response
+        response = struct.pack('<I', container_length) + response
         return response
 
     @mutable('image_GetObjectInfo_response2')
@@ -326,16 +323,16 @@ class USBImageInterface(USBInterface):
         operation_code = Opcodes.GetObjectHandles
         object_handle_array_size = 0x00000001  # 1 array size
         object_handle = 0x421942ca  # Object handle
-        response = pack(
+        response = struct.pack(
             '<HHIII',
             container_type,
             operation_code,
-            transaction_id,
+            container.transaction_id,
             object_handle_array_size,
             object_handle,
         )
         container_length = len(response) + 4
-        response = pack('<I', container_length) + response
+        response = struct.pack('<I', container_length) + response
         return response
 
     @mutable('image_GetObjectHandles_response2')
@@ -348,16 +345,16 @@ class USBImageInterface(USBInterface):
         operation_code = Opcodes.GetStorageIDs
         storage_id_array_size = 0x00000001  # 1 storage ID
         storage_id = 0x00010001  # Phys: 0x0001 Log: 0x0001
-        response = pack(
+        response = struct.pack(
             '<HHIII',
             container_type,
             operation_code,
-            transaction_id,
+            container.transaction_id,
             storage_id_array_size,
             storage_id,
         )
         container_length = len(response) + 4
-        response = pack('<I', container_length) + response
+        response = struct.pack('<I', container_length) + response
         return response
 
     @mutable('image_GetStorageIDs_response2')
@@ -394,11 +391,11 @@ class USBImageInterface(USBInterface):
         device_version = encode_string('1.0')
         serial_number = encode_string('0000000000000000001X0209030754')
 
-        response = pack(
+        response = struct.pack(
             '<HHIHIHBH',
             container_type,
             operation_code,
-            transaction_id,
+            container.transaction_id,
             standard_version,
             vendor_extension_id,
             vendor_extension_version,
@@ -407,9 +404,9 @@ class USBImageInterface(USBInterface):
         )
 
         def pack_array(arr):
-            resp = pack('<I', len(arr))
+            resp = struct.pack('<I', len(arr))
             for elem in arr:
-                resp += pack('<H', elem)
+                resp += struct.pack('<H', elem)
             return resp
 
         response += pack_array(operations_supported_array)
@@ -420,7 +417,7 @@ class USBImageInterface(USBInterface):
         response = manufacturer + model + device_version + serial_number
 
         container_length = len(response) + 4
-        response = pack('<I', container_length) + response
+        response = struct.pack('<I', container_length) + response
         return response
 
     @mutable('image_GetDeviceInfo_response2')
@@ -432,14 +429,14 @@ class USBImageInterface(USBInterface):
         thumb_data = (self.thumb_image.read_data())
         container_type = 0x0002  # Data block
         operation_code = Opcodes.GetThumb
-        response = pack('<HHI', container_type, operation_code, transaction_id)
+        response = struct.pack('<HHI', container_type, operation_code, container.transaction_id)
         thumbnail_data_object = thumb_data
         x = 0
         while x < len(thumbnail_data_object):
-            response += bytes([thumbnail_data_object[x]])
+            response += struct.pack('<B', thumbnail_data_object[x])
             x += 1
         container_length = len(response) + 4
-        response = pack('<I', container_length) + response
+        response = struct.pack('<I', container_length) + response
         return response
 
     @mutable('image_GetThumb_response2')
@@ -470,7 +467,7 @@ class ContainerRequestWrapper:
             self.opcode,
             self.transaction_id,
             self.parameter1
-        ) = unpack('<IHHII', bytestring[:16])
+        ) = struct.unpack('<IHHII', bytestring[:16])
 
 
 class USBImageDevice(USBDevice):

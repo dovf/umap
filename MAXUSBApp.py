@@ -5,9 +5,9 @@
 import sys
 import os
 import traceback
-from util import *
-from Facedancer import *
-from USB import *
+import struct
+from binascii import hexlify
+from Facedancer import FacedancerApp, FacedancerCommand
 from USBDevice import USBDeviceRequest
 
 
@@ -103,9 +103,10 @@ class MAXUSBApp(FacedancerApp):
             self.write_register_cmd.data[0] |= 1
         self.device.writecmd(self.read_register_cmd)
         resp = self.device.readcmd()
+        reg_val = struct.unpack('<B', resp.data[1:2])[0]
         if self.verbose > 5:
-            print(self.app_name, "read register 0x%02x has value 0x%02x" % (reg_num, resp.data[1]))
-        return resp.data[1]
+            print(self.app_name, "read register 0x%02x has value 0x%02x" % (reg_num, reg_val))
+        return reg_val
 
     def write_register(self, reg_num, value, ack=False):
         if self.verbose > 4:
@@ -147,26 +148,26 @@ class MAXUSBApp(FacedancerApp):
         self.write_register(reg, bit)
 
     def read_bytes(self, reg, n):
-        if self.verbose > 4:
+        if self.verbose > 5:
             print(self.app_name, "reading", n, "bytes from register", reg)
-        data = bytes([(reg << 3)] + ([0] * n))
+        data = struct.pack('B', reg << 3) + b'\00' * n
         cmd = FacedancerCommand(self.app_num, 0x00, data)
 
         self.device.writecmd(cmd)
         resp = self.device.readcmd()
-        if self.verbose > 5:
-            print(self.app_name, "read", len(resp.data) - 1, "bytes from register", reg)
+        if self.verbose > 4:
+            print(self.app_name, "read %d bytes from register %d", (len(resp.data) - 1, reg))
         return resp.data[1:]
 
     def write_bytes(self, reg, data):
-        data = bytes([(reg << 3) | 3]) + data
+        data = struct.pack('<B', (reg << 3) | 3) + data
         cmd = FacedancerCommand(self.app_num, 0x00, data)
 
         self.device.writecmd(cmd)
         self.device.readcmd()  # null response
 
         if self.verbose > 5:
-            print(self.app_name, "wrote", len(data) - 1, "bytes to register", reg)
+            print(self.app_name, "wrote %d bytes to register %d", (len(data) - 1, reg))
 
     # HACK: but given the limitations of the MAX chips, it seems necessary
     def send_on_endpoint(self, ep_num, data):
@@ -193,7 +194,7 @@ class MAXUSBApp(FacedancerApp):
         self.write_register(bc_reg, len(data), ack=True)
 
         if self.verbose > 3:
-            print(self.app_name, "wrote", bytes_as_hex(data), "to endpoint", ep_num)
+            print(self.app_name, "wrote", hexlify(data), "to endpoint", ep_num)
 
     # HACK: but given the limitations of the MAX chips, it seems necessary
     def read_from_endpoint(self, ep_num):
@@ -207,7 +208,7 @@ class MAXUSBApp(FacedancerApp):
         data = self.read_bytes(self.reg_ep1_out_fifo, byte_count)
 
         if self.verbose > 3:
-            print(self.app_name, "read", bytes_as_hex(data), "from endpoint", ep_num)
+            print(self.app_name, "read", hexlify(data), "from endpoint", ep_num)
 
         return data
 

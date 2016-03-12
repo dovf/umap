@@ -5,13 +5,11 @@
 '''
 .. todo:: see here re-enpoints <http://janaxelson.com/usb_virtual_com_port.htm>_
 '''
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBCSInterface import *
-from USBEndpoint import *
-from USBCSEndpoint import *
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
 from .wrappers import mutable
 
 

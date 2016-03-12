@@ -2,14 +2,13 @@
 #
 # Contains class definitions to implement a USB iPhone device.
 
-from USB import *
-from USBDevice import *
-from USBConfiguration import *
-from USBInterface import *
-from USBCSInterface import *
-from USBEndpoint import *
-from USBCSEndpoint import *
-from USBVendor import *
+from USBClass import USBClass
+from USBDevice import USBDevice
+from USBConfiguration import USBConfiguration
+from USBInterface import USBInterface
+from USBEndpoint import USBEndpoint
+from USBVendor import USBVendor
+from .wrappers import mutable
 
 
 class USBIphoneVendor(USBVendor):
