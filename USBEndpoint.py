@@ -57,7 +57,8 @@ class USBEndpoint(USBBaseActor):
         self.interface = None
 
         self.request_handlers = {
-            1: self.handle_clear_feature_request
+            0: self.handle_get_status,
+            1: self.handle_clear_feature_request,
         }
 
     def handle_clear_feature_request(self, req):
@@ -65,6 +66,10 @@ class USBEndpoint(USBBaseActor):
             # print("received CLEAR_FEATURE request for endpoint", self.number,
             #        "with value", req.value)
             self.interface.configuration.device.app.send_on_endpoint(0, b'')
+
+    def handle_get_status(self, req):
+        self.logger.info('in GET_STATUS of endpoint %d' % self.number)
+        self.interface.configuration.device.app.send_on_endpoint(0, b'\x00\x00')
 
     def set_interface(self, interface):
         self.interface = interface

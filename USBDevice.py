@@ -212,6 +212,7 @@ class USBDevice(USBBaseActor):
             self.logger.error('request not handled', req)
             self.logger.debug('handler entity type: %s' % (type(handler_entity)))
             self.logger.debug('handler entity: %s' % (handler_entity))
+            self.logger.debug('handler_entity.request_handlers: %s' % (handler_entity.request_handlers))
 
             if self.app.mode == 2 or self.app.mode == 3:
 
