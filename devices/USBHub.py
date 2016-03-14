@@ -44,7 +44,7 @@ class USBHubInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_interrupt,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=16384,
+                max_packet_size=0x40,
                 interval=0x0c,
                 handler=self.handle_buffer_available
         )

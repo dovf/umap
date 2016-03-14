@@ -56,18 +56,18 @@ class USBPrinterInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=16384,      # max packet size
+                max_packet_size=0x40,      # max packet size
                 interval=0xff,          # polling interval, see USB 2.0 spec Table 9-13
                 handler=self.handle_data_available    # handler function
             ),
             USBEndpoint(
                 app=app,
-                number=0x81,          # endpoint address
+                number=2,          # endpoint address
                 direction=USBEndpoint.direction_in,
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=16384,      # max packet size
+                max_packet_size=0x40,      # max packet size
                 interval=0,          # polling interval, see USB 2.0 spec Table 9-13
                 handler=None        # handler function
             )
@@ -76,23 +76,23 @@ class USBPrinterInterface(USBInterface):
         endpoints1 = [
             USBEndpoint(
                 app=app,
-                number=0x0b,          # endpoint address
+                number=1,          # endpoint address
                 direction=USBEndpoint.direction_out,
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=16384,      # max packet size
+                max_packet_size=0x40,      # max packet size
                 interval=0xff,          # polling interval, see USB 2.0 spec Table 9-13
                 handler=self.handle_data_available    # handler function
             ),
             USBEndpoint(
                 app=app,
-                number=0x8b,          # endpoint address
+                number=2,          # endpoint address
                 direction=USBEndpoint.direction_in,
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=16384,      # max packet size
+                max_packet_size=0x40,      # max packet size
                 interval=0,          # polling interval, see USB 2.0 spec Table 9-13
                 handler=None        # handler function
             )
@@ -125,6 +125,7 @@ class USBPrinterInterface(USBInterface):
         self.write_length = 0
         self.write_data = b''
 
+    @mutable('handle_data_available')
     def handle_data_available(self, data):
         if not self.writing:
             self.logger.info("Writing PCL file: %s" % self.filename)
@@ -147,7 +148,7 @@ class USBPrinterDevice(USBDevice):
     def __init__(self, app, vid, pid, rev, usbclass, subclass, proto, verbose=0):
         interfaces = [
             USBPrinterInterface(0, app, usbclass, subclass, proto, verbose=verbose),
-            USBPrinterInterface(1, app, 0xff, 1, 1, verbose=verbose),
+            # USBPrinterInterface(1, app, 0xff, 1, 1, verbose=verbose),
         ]
         config = USBConfiguration(
                 app=app,

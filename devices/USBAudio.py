@@ -204,7 +204,7 @@ class USBAudioInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_interrupt,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=0x0400,
+                max_packet_size=0x40,
                 interval=0x02,
                 handler=self.audio_ep2_buffer_available
             )

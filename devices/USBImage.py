@@ -98,7 +98,7 @@ class USBImageInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=0x4000,
+                max_packet_size=0x40,
                 interval=0x00,
                 handler=self.handle_ep1_data_available
             ),
@@ -109,7 +109,7 @@ class USBImageInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_bulk,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=0x4000,
+                max_packet_size=0x40,
                 interval=0,
                 handler=self.handle_ep2_buffer_available
             ),
@@ -120,7 +120,7 @@ class USBImageInterface(USBInterface):
                 transfer_type=USBEndpoint.transfer_type_interrupt,
                 sync_type=USBEndpoint.sync_type_none,
                 usage_type=USBEndpoint.usage_type_data,
-                max_packet_size=0x0800,
+                max_packet_size=0x40,
                 interval=0x10,
                 handler=self.handle_ep3_buffer_available
             )
@@ -491,7 +491,7 @@ class USBImageDevice(USBDevice):
                 device_class=0,  # shouldn't it be 6?
                 device_subclass=0,
                 protocol_rel_num=0,
-                max_packet_size_ep0=64,
+                max_packet_size_ep0=0x40,
                 vendor_id=vid,
                 product_id=pid,
                 device_rev=rev,
