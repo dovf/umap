@@ -22,11 +22,16 @@ class USBHubClass(USBClass):
 
     @mutable('hub_get_hub_status_response')
     def handle_get_hub_status(self, req):
-        return b'\x61\x61\x61\x61'
+        i = req.index
+        if i:
+            self.logger.info('GetPortStatus (%d)' % i)
+        else:
+            self.logger.info('GetHubStatus')
+        return b'\x00\x00\x00\x00'
 
     @mutable('hub_set_port_feature_response')
     def handle_set_port_feature(self, req):
-        return b''
+        return b'\x01'
 
 
 class USBHubInterface(USBInterface):
@@ -37,7 +42,7 @@ class USBHubInterface(USBInterface):
                 USB.desc_type_hub: self.get_hub_descriptor
         }
 
-        endpoint = USBEndpoint(
+        int_ep = USBEndpoint(
                 app=app,
                 number=0x2,
                 direction=USBEndpoint.direction_in,
@@ -59,7 +64,7 @@ class USBHubInterface(USBInterface):
             interface_protocol=0,          # 0 protocol
             interface_string_index=0,          # string index
             verbose=verbose,
-            endpoints=[endpoint],
+            endpoints=[int_ep],
             descriptors=descriptors
         )
 
@@ -89,7 +94,6 @@ class USBHubInterface(USBInterface):
             PortPwrCtrlMask
         )
 
-    @mutable('hub_buffer_available_response')
     def handle_buffer_available(self):
         return
 
