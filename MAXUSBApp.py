@@ -98,9 +98,8 @@ class MAXUSBApp(FacedancerApp):
     def read_register(self, reg_num, ack=False):
         if self.verbose > 4:
             print(self.app_name, "reading register 0x%02x" % reg_num)
-        self.read_register_cmd.data = bytearray([reg_num << 3, 0])
-        if ack:
-            self.write_register_cmd.data[0] |= 1
+        mask = 0 if not ack else 1
+        self.read_register_cmd.data = struct.pack('<BB', (reg_num << 3) | mask, 0)
         self.device.writecmd(self.read_register_cmd)
         resp = self.device.readcmd()
         reg_val = struct.unpack('<B', resp.data[1:2])[0]
@@ -111,9 +110,8 @@ class MAXUSBApp(FacedancerApp):
     def write_register(self, reg_num, value, ack=False):
         if self.verbose > 4:
             print(self.app_name, "writing register 0x%02x with value 0x%02x" % (reg_num, value))
-        self.write_register_cmd.data = bytearray([(reg_num << 3) | 2, value])
-        if ack:
-            self.write_register_cmd.data[0] |= 1
+        mask = 2 if not ack else 3
+        self.write_register_cmd.data = struct.pack('<BB', (reg_num << 3) | mask, value)
         self.device.writecmd(self.write_register_cmd)
         self.device.readcmd()
 

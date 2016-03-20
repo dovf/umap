@@ -117,27 +117,23 @@ class USBDevice(USBBaseActor):
         bLength = 18
         bDescriptorType = 1
         bMaxPacketSize0 = self.max_packet_size_ep0
-        d = bytearray([
+        d = struct.pack(
+            '<BBHBBBBHHHBBBB',
             bLength,
             bDescriptorType,
-            (self.usb_spec_version >> 8) & 0xff,
-            self.usb_spec_version & 0xff,
+            self.usb_spec_version,
             self.device_class,
             self.device_subclass,
             self.protocol_rel_num,
             bMaxPacketSize0,
-            self.vendor_id & 0xff,
-            (self.vendor_id >> 8) & 0xff,
-            self.product_id & 0xff,
-            (self.product_id >> 8) & 0xff,
-            self.device_rev & 0xff,
-            (self.device_rev >> 8) & 0xff,
+            self.vendor_id,
+            self.product_id,
+            self.device_rev,
             self.manufacturer_string_id,
             self.product_string_id,
             self.serial_number_string_id,
             len(self.configurations)
-        ])
-
+        )
         return d
 
     # IRQ handlers
@@ -151,18 +147,18 @@ class USBDevice(USBBaseActor):
         bReserved = 0
         bMaxPacketSize0 = self.max_packet_size_ep0
 
-        d = bytearray([
+        d = struct.pack(
+            '<BBHBBBBBB',
             bLength,
             bDescriptorType,
-            (self.usb_spec_version >> 8) & 0xff,
-            self.usb_spec_version & 0xff,
+            self.usb_spec_version,
             self.device_class,
             self.device_subclass,
             self.protocol_rel_num,
             bMaxPacketSize0,
             bNumConfigurations,
             bReserved
-        ])
+        )
 
         return d
 
