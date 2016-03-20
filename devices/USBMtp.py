@@ -21,7 +21,6 @@ except:
     mtpdeviceloaded = False
 
 import struct
-from binascii import hexlify
 
 
 class USBMtpInterface(USBInterface):
@@ -55,15 +54,12 @@ class USBMtpInterface(USBInterface):
             manufacturer='BinyaminSharet',
             model='Role',
             device_version='1.2',
-            serial_number=hexlify('01234567'),
+            serial_number='3031323334353637',
         )
         properties = [
             MtpDeviceProperty(MtpDevicePropertyCode.MTP_DeviceFriendlyName, 0, MStr('UmapMtpDevice'), MStr('')),
             MtpDeviceProperty(MtpDevicePropertyCode.BatteryLevel, 0, UInt8(100), UInt8(0))
         ]
-        self.dev = MtpDevice(self.dev_info, properties)
-        self.dev.add_storage(self.storage)
-        self.api = MtpApi(self.dev)
         endpoints = [
             USBEndpoint(
                 app=app,
@@ -118,9 +114,10 @@ class USBMtpInterface(USBInterface):
         # OS String descriptor
         # self.add_string_with_id(50, 'MTP'.encode('utf-16') + b'\x00\x00')
         self.add_string_with_id(0xee, 'MSFT100'.encode('utf-16') + b'\x00\x00')
-        for endpoint in endpoints:
-            self.logger.debug('endpoint[%d]: %s' % (endpoint.number, endpoint))
-        self.logger.debug(str(self.dev))
+        self.dev = MtpDevice(self.dev_info, properties, self.logger)
+        self.dev.set_fuzzer(self.app.fuzzer)
+        self.dev.add_storage(self.storage)
+        self.api = MtpApi(self.dev)
 
     def handle_ep1_data_available(self, data):
         resps = self.api.handle_payload(data)
