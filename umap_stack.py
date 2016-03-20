@@ -44,49 +44,49 @@ class_map = {
         'fd_class': USBAudioDevice,
         'classes': [USBClass.Audio],
         'params': {
-            'vid': 0x041e, 'pid': 0x0402, 'rev': 0x0100,
+            'vid': 0x041e, 'pid': 0x0402, 'rev': 0x0001,
         }
     },
     'cdc': {
         'fd_class': USBCDCDevice,
         'classes': [USBClass.CDC, USBClass.CDCData],
         'params': {
-            'vid': 0x2548, 'pid': 0x1001, 'rev': 0x1000,
+            'vid': 0x2548, 'pid': 0x1001, 'rev': 0x0010,
         }
     },
     'ftdi': {
         'fd_class': USBFtdiDevice,
         'classes': [USBClass.VendorSpecific],
         'params': {
-            'vid': 0x0403, 'pid': 0x6001, 'rev': 0x0001,
+            'vid': 0x0403, 'pid': 0x6001, 'rev': 0x0100,
         }
     },
     'hub': {
         'fd_class': USBHubDevice,
         'classes': [USBClass.Hub],
         'params': {
-            'vid': 0x05e3, 'pid': 0x0608, 'rev': 0x7764,
+            'vid': 0x05e3, 'pid': 0x0608, 'rev': 0x6477,
         }
     },
     'image': {
         'fd_class': USBImageDevice,
         'classes': [USBClass.Image],
         'params': {
-            'vid': 0x04da, 'pid': 0x2374, 'rev': 0x0010, 'usbclass': USBClass.Image,
+            'vid': 0x04da, 'pid': 0x2374, 'rev': 0x1000, 'usbclass': USBClass.Image,
         }
     },
     'keyboard': {
         'fd_class': USBKeyboardDevice,
         'classes': [USBClass.HID],
         'params': {
-            'vid': 0x610b, 'pid': 0x4653, 'rev': 0x3412,
+            'vid': 0x610b, 'pid': 0x4653, 'rev': 0x1234,
         },
     },
     'mass-storage': {
         'fd_class': USBMassStorageDevice,
         'classes': [USBClass.MassStorage],
         'params': {
-            'vid': 0x154b, 'pid': 0x6545, 'rev': 0x0200, 'usbclass': USBClass.MassStorage,
+            'vid': 0x154b, 'pid': 0x6545, 'rev': 0x0002, 'usbclass': USBClass.MassStorage,
             'subclass': 6,  # SCSI transparent command set
             'proto': 0x50,  # bulk-only (BBB) transport
         }
@@ -95,14 +95,14 @@ class_map = {
         'fd_class': USBMtpDevice,
         'classes': [USBClass.VendorSpecific],
         'params': {
-            'vid': 0x04e8, 'pid': 0x685c, 'rev': 0x0200,
+            'vid': 0x04e8, 'pid': 0x685c, 'rev': 0x0002,
         }
     },
     'printer': {
         'fd_class': USBPrinterDevice,
         'classes': [USBClass.Printer],
         'params': {
-            'vid': 0x03f0, 'pid': 0x4417, 'rev': 0x0100,
+            'vid': 0x03f0, 'pid': 0x4417, 'rev': 0x0001,
             'usbclass': USBClass.Printer, 'subclass': 1, 'proto': 2,
         }
     },
@@ -110,7 +110,7 @@ class_map = {
         'fd_class': USBSmartcardDevice,
         'classes': [USBClass.SmartCard],
         'params': {
-            'vid': 0x0bda, 'pid': 0x0165, 'rev': 0x6123,
+            'vid': 0x0bda, 'pid': 0x0165, 'rev': 0x2361,
         },
     },
 }
