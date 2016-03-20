@@ -24,6 +24,7 @@ from Facedancer import Facedancer
 from MAXUSBApp import MAXUSBApp
 from serial import Serial, PARITY_NONE
 
+from USBClass import USBClass
 from devices.USBKeyboard import USBKeyboardDevice
 from devices.USBAudio import USBAudioDevice
 from devices.USBCDC import USBCDCDevice
@@ -41,99 +42,75 @@ list_cmd = 'umap_stack.py list classes'
 class_map = {
     'audio': {
         'fd_class': USBAudioDevice,
-        'classes': [1],
+        'classes': [USBClass.Audio],
         'params': {
-            'vid': 0x041e,
-            'pid': 0x0402,
-            'rev': 0x0100,
+            'vid': 0x041e, 'pid': 0x0402, 'rev': 0x0100,
         }
     },
     'cdc': {
         'fd_class': USBCDCDevice,
-        'classes': [2, 10],
+        'classes': [USBClass.CDC, USBClass.CDCData],
         'params': {
-            'vid': 0x2548,
-            'pid': 0x1001,
-            'rev': 0x1000,
+            'vid': 0x2548, 'pid': 0x1001, 'rev': 0x1000,
         }
     },
     'ftdi': {
         'fd_class': USBFtdiDevice,
-        'classes': [0xff],
+        'classes': [USBClass.VendorSpecific],
         'params': {
-            'vid': 0x0403,
-            'pid': 0x6001,
-            'rev': 0x0001,
+            'vid': 0x0403, 'pid': 0x6001, 'rev': 0x0001,
         }
     },
     'hub': {
         'fd_class': USBHubDevice,
-        'classes': [9],
+        'classes': [USBClass.Hub],
         'params': {
-            'vid': 0x05e3,
-            'pid': 0x0608,
-            'rev': 0x7764,
+            'vid': 0x05e3, 'pid': 0x0608, 'rev': 0x7764,
         }
     },
     'image': {
         'fd_class': USBImageDevice,
-        'classes': [6],
+        'classes': [USBClass.Image],
         'params': {
-            'vid': 0x04da,
-            'pid': 0x2374,
-            'rev': 0x0010,
-            'usbclass': 6,
+            'vid': 0x04da, 'pid': 0x2374, 'rev': 0x0010, 'usbclass': USBClass.Image,
         }
     },
     'keyboard': {
         'fd_class': USBKeyboardDevice,
-        'classes': [3],
+        'classes': [USBClass.HID],
         'params': {
-            'vid': 0x610b,  # 0x413c,
-            'pid': 0x4653,  # 0x2107,
-            'rev': 0x3412,  # 0x0178,
+            'vid': 0x610b, 'pid': 0x4653, 'rev': 0x3412,
         },
     },
     'mass-storage': {
         'fd_class': USBMassStorageDevice,
-        'classes': [8],
+        'classes': [USBClass.MassStorage],
         'params': {
-            'vid': 0x154b,
-            'pid': 0x6545,
-            'rev': 0x0200,
-            'usbclass': 8,
+            'vid': 0x154b, 'pid': 0x6545, 'rev': 0x0200, 'usbclass': USBClass.MassStorage,
             'subclass': 6,  # SCSI transparent command set
             'proto': 0x50,  # bulk-only (BBB) transport
         }
     },
     'mtp': {
         'fd_class': USBMtpDevice,
-        'classes': [0xff],
+        'classes': [USBClass.VendorSpecific],
         'params': {
-            'vid': 0x04e8,
-            'pid': 0x685c,
-            'rev': 0x0200,
+            'vid': 0x04e8, 'pid': 0x685c, 'rev': 0x0200,
         }
     },
     'printer': {
         'fd_class': USBPrinterDevice,
-        'classes': [7],
+        'classes': [USBClass.Printer],
         'params': {
-            'vid': 0x03f0,
-            'pid': 0x4417,
-            'rev': 0x0100,
-            'usbclass': 7,
-            'subclass': 1,
-            'proto': 2,
+            'vid': 0x03f0, 'pid': 0x4417, 'rev': 0x0100,
+            'usbclass': USBClass.Printer, 'subclass': 1, 'proto': 2,
         }
     },
     'smartcard': {
         'fd_class': USBSmartcardDevice,
-        'classes': [11],
+        'classes': [USBClass.SmartCard],
         'params': {
-            'vid': 0x0bda,
-            'pid': 0x0165,
-            'rev': 0x6123,
+            'vid': 0x0bda, 'pid': 0x0165, 'rev': 0x6123,
         },
     },
 }

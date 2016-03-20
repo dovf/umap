@@ -462,7 +462,7 @@ class USBMassStorageDevice(USBDevice):
 
         super(USBMassStorageDevice, self).__init__(
                 app=app,
-                device_class=0,
+                device_class=USBClass.Unspecified,
                 device_subclass=0,
                 protocol_rel_num=0,
                 max_packet_size_ep0=64,

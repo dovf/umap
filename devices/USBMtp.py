@@ -6,6 +6,7 @@ from USBConfiguration import USBConfiguration
 from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBVendor import USBVendor
+from USBClass import USBClass
 from .wrappers import mutable
 try:
     from mtpdevice.mtp_device import MtpDevice, MtpDeviceInfo
@@ -103,7 +104,7 @@ class USBMtpInterface(USBInterface):
             app=app,
             interface_number=0,
             interface_alternate=0,
-            interface_class=0xff,
+            interface_class=USBClass.VendorSpecific,
             interface_subclass=0xff,
             interface_protocol=0,
             interface_string_index=0,
@@ -174,7 +175,7 @@ class USBMtpDevice(USBDevice):
         )
         super(USBMtpDevice, self).__init__(
             app=app,
-            device_class=0,
+            device_class=USBClass.Unspecified,
             device_subclass=0,
             protocol_rel_num=0,
             max_packet_size_ep0=64,
@@ -190,4 +191,3 @@ class USBMtpDevice(USBDevice):
         )
         self.device_vendor = USBMsosVendor(app=app, verbose=verbose)
         self.device_vendor.set_device(self)
-

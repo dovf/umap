@@ -268,10 +268,10 @@ class USBAudioDevice(USBDevice):
     name = "USB audio device"
 
     def __init__(self, app, vid, pid, rev, verbose=0, **kwargs):
-        interface0 = USBAudioInterface(0, app, 0x01, 0x01, 0x00, verbose=verbose)
-        interface1 = USBAudioInterface(1, app, 0x01, 0x02, 0x00, verbose=verbose)
-        interface2 = USBAudioInterface(2, app, 0x01, 0x02, 0x00, verbose=verbose)
-        interface3 = USBAudioInterface(3, app, 0x03, 0x00, 0x00, verbose=verbose)
+        interface0 = USBAudioInterface(0, app, USBClass.Audio, 0x01, 0x00, verbose=verbose)
+        interface1 = USBAudioInterface(1, app, USBClass.Audio, 0x02, 0x00, verbose=verbose)
+        interface2 = USBAudioInterface(2, app, USBClass.Audio, 0x02, 0x00, verbose=verbose)
+        interface3 = USBAudioInterface(3, app, USBClass.HID, 0x00, 0x00, verbose=verbose)
 
         config = USBConfiguration(
             app=app,
@@ -287,7 +287,7 @@ class USBAudioDevice(USBDevice):
 
         super(USBAudioDevice, self).__init__(
             app=app,
-            device_class=0,
+            device_class=USBClass.Unspecified,
             device_subclass=0,
             protocol_rel_num=0,
             max_packet_size_ep0=64,

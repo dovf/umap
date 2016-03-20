@@ -76,7 +76,7 @@ class USBKeyboardInterface(USBInterface):
             app=app,
             interface_number=0,
             interface_alternate=0,
-            interface_class=3,
+            interface_class=USBClass.HID,
             interface_subclass=0,
             interface_protocol=0,
             interface_string_index=0,
@@ -203,7 +203,7 @@ class USBKeyboardDevice(USBDevice):
         )
         super(USBKeyboardDevice, self).__init__(
             app=app,
-            device_class=0,
+            device_class=USBClass.Unspecified,
             device_subclass=0,
             protocol_rel_num=0,
             max_packet_size_ep0=64,

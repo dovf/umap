@@ -88,7 +88,7 @@ class USBVendorInterface(USBInterface):
                 app=app,
                 interface_number=0,          # interface number
                 interface_alternate=0,          # alternate setting
-                interface_class=0xff,       # 3 interface class
+                interface_class=USBClass.VendorSpecific,       # 3 interface class
                 interface_subclass=0xff,          # 0 subclass
                 interface_protocol=0xff,          # 0 protocol
                 interface_string_index=0,          # string index
@@ -121,7 +121,7 @@ class USBVendorDevice(USBDevice):
 
         super(USBVendorDevice, self).__init__(
             app=app,
-            device_class=0xff,
+            device_class=USBClass.VendorSpecific,
             device_subclass=0xff,
             protocol_rel_num=0xff,
             max_packet_size_ep0=64,

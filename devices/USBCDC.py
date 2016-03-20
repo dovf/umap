@@ -156,8 +156,8 @@ class USBCDCDevice(USBDevice):
     name = "USB CDC device"
 
     def __init__(self, app, vid, pid, rev, verbose=0, **kwargs):
-        interface0 = USBCDCInterface(0, app, 0x02, 0x02, 0x01, verbose=verbose)
-        interface1 = USBCDCInterface(1, app, 0x0a, 0x00, 0x00, verbose=verbose)
+        interface0 = USBCDCInterface(0, app, USBClass.CDC, 0x02, 0x01, verbose=verbose)
+        interface1 = USBCDCInterface(1, app, USBClass.CDCData, 0x00, 0x00, verbose=verbose)
 
         config = USBConfiguration(
             app=app,
@@ -168,7 +168,7 @@ class USBCDCDevice(USBDevice):
 
         super(USBCDCDevice, self).__init__(
             app=app,
-            device_class=2,
+            device_class=USBClass.CDC,
             device_subclass=0,
             protocol_rel_num=0,
             max_packet_size_ep0=64,

@@ -7,6 +7,7 @@ from USBConfiguration import USBConfiguration
 from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBVendor import USBVendor
+from USBClass import USBClass
 from .wrappers import mutable
 
 
@@ -121,7 +122,7 @@ class USBFtdiInterface(USBInterface):
             app=app,
             interface_number=int_num,
             interface_alternate=0,
-            interface_class=0xff,
+            interface_class=USBClass.VendorSpecific,
             interface_subclass=0xff,
             interface_protocol=0xff,
             interface_string_index=0,
@@ -153,7 +154,7 @@ class USBFtdiDevice(USBDevice):
 
         super(USBFtdiDevice, self).__init__(
                 app=app,
-                device_class=0,
+                device_class=USBClass.Unspecified,
                 device_subclass=0,
                 protocol_rel_num=0,
                 max_packet_size_ep0=64,

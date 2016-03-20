@@ -57,12 +57,12 @@ class USBHubInterface(USBInterface):
         # TODO: un-hardcode string index (last arg before "verbose")
         super(USBHubInterface, self).__init__(
             app=app,
-            interface_number=0,          # interface number
-            interface_alternate=0,          # alternate setting
-            interface_class=9,          # 3 interface class
-            interface_subclass=0,          # 0 subclass
-            interface_protocol=0,          # 0 protocol
-            interface_string_index=0,          # string index
+            interface_number=0,
+            interface_alternate=0,
+            interface_class=USBClass.Hub,
+            interface_subclass=0,
+            interface_protocol=0,
+            interface_string_index=0,
             verbose=verbose,
             endpoints=[int_ep],
             descriptors=descriptors
@@ -113,7 +113,7 @@ class USBHubDevice(USBDevice):
 
         super(USBHubDevice, self).__init__(
             app=app,
-            device_class=9,
+            device_class=USBClass.Hub,
             device_subclass=0,
             protocol_rel_num=1,
             max_packet_size_ep0=64,
