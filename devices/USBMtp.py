@@ -30,36 +30,6 @@ class USBMtpInterface(USBInterface):
         if not mtpdeviceloaded:
             raise Exception('You cannot use USBMtp until you install pymtpdevice')
         descriptors = {}
-        self.object = MtpObject.from_fs_recursive('mtp_fs')
-        self.storage_info = MtpStorageInfo(
-            st_type=1,
-            fs_type=2,
-            access=0,
-            max_cap=150000,
-            free_bytes=0,
-            free_objs=0,
-            desc='MyStorage',
-            vol_id='Python MTP Device Stack',
-        )
-        self.storage = MtpStorage(self.storage_info)
-        self.storage.add_object(self.object)
-        self.dev_info = MtpDeviceInfo(
-            std_version=0x0064,
-            mtp_vendor_ext_id=0x00000006,
-            mtp_version=0x0064,
-            mtp_extensions='microsoft.com: 1.0;',
-            functional_mode=0x0000,
-            capture_formats=[],
-            playback_formats=[],
-            manufacturer='BinyaminSharet',
-            model='Role',
-            device_version='1.2',
-            serial_number='3031323334353637',
-        )
-        properties = [
-            MtpDeviceProperty(MtpDevicePropertyCode.MTP_DeviceFriendlyName, 0, MStr('UmapMtpDevice'), MStr('')),
-            MtpDeviceProperty(MtpDevicePropertyCode.BatteryLevel, 0, UInt8(100), UInt8(0))
-        ]
         endpoints = [
             USBEndpoint(
                 app=app,
@@ -108,16 +78,45 @@ class USBMtpInterface(USBInterface):
             endpoints=endpoints,
             descriptors=descriptors
         )
+        # self.object = MtpObject.from_fs_recursive('mtp_fs')
+        self.object = MtpObject.from_fs_recursive('mtp_fs/eits.mp3')
+        self.storage_info = MtpStorageInfo(
+            st_type=1,
+            fs_type=2,
+            access=0,
+            max_cap=150000,
+            free_bytes=0,
+            free_objs=0,
+            desc='MyStorage',
+            vol_id='Python MTP Device Stack',
+        )
+        self.storage = MtpStorage(self.storage_info)
+        self.storage.add_object(self.object)
+        self.dev_info = MtpDeviceInfo(
+            std_version=0x0064,
+            mtp_vendor_ext_id=0x00000006,
+            mtp_version=0x0064,
+            mtp_extensions='microsoft.com: 1.0;',
+            functional_mode=0x0000,
+            capture_formats=[],
+            playback_formats=[],
+            manufacturer='BinyaminSharet',
+            model='Role',
+            device_version='1.2',
+            serial_number='3031323334353637',
+        )
+        properties = [
+            MtpDeviceProperty(MtpDevicePropertyCode.MTP_DeviceFriendlyName, 0, MStr('UmapMtpDevice'), MStr('')),
+            MtpDeviceProperty(MtpDevicePropertyCode.BatteryLevel, 0, UInt8(100), UInt8(0))
+        ]
+        self.dev = MtpDevice(self.dev_info, properties, self.logger)
+        self.dev.add_storage(self.storage)
+        self.dev.set_fuzzer(app.fuzzer)
+        self.api = MtpApi(self.dev)
 
-        # self.device_class = USBMtpClass(app, verbose)
-        # self.device_class.set_interface(self)
         # OS String descriptor
         # self.add_string_with_id(50, 'MTP'.encode('utf-16') + b'\x00\x00')
         self.add_string_with_id(0xee, 'MSFT100'.encode('utf-16') + b'\x00\x00')
-        self.dev = MtpDevice(self.dev_info, properties, self.logger)
-        self.dev.set_fuzzer(self.app.fuzzer)
-        self.dev.add_storage(self.storage)
-        self.api = MtpApi(self.dev)
 
     def handle_ep1_data_available(self, data):
         resps = self.api.handle_payload(data)

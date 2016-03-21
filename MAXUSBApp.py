@@ -6,6 +6,7 @@ import sys
 import os
 import traceback
 import struct
+import time
 from binascii import hexlify
 from Facedancer import FacedancerApp, FacedancerCommand
 from USBDevice import USBDeviceRequest
@@ -217,11 +218,17 @@ class MAXUSBApp(FacedancerApp):
         self.write_register(self.reg_ep_stalls, 0x23)
 
     def check_connection_commands(self):
+        '''
+        :return: whether perform reconnection
+        '''
         if self.should_reconnect():
             dev = self.connected_device
             self.disconnect()
+            time.sleep(0.2)
             self.connect(dev)
             self.clear_reconnect_trigger()
+            return True
+        return False
 
     def should_reconnect(self):
         if self.fuzzer:
@@ -310,5 +317,6 @@ class MAXUSBApp(FacedancerApp):
                     print('umap ignored the exception for some reason... will need to address that later on')
                     raise
             tmp_irq = irq
-            self.check_connection_commands()
+            if self.check_connection_commands():
+                count = 0
         self.disconnect()

@@ -136,7 +136,8 @@ def build_device(fuzzer, options):
     sp = Serial(options['--port'], 115200, parity=PARITY_NONE, timeout=2)
     verbosity = options['--verbose']
     logfp = None
-    mode = 2
+    # mode = 2
+    mode = 5
     current_testcase = None
     fd = Facedancer(sp, verbose=verbosity)
     app = MAXUSBApp(fd, logfp, mode, current_testcase, verbose=verbosity, fuzzer=fuzzer)
