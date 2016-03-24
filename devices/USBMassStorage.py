@@ -429,9 +429,9 @@ class CommandBlockWrapper:
         self.signature = bytestring[0:4]
         self.tag = bytestring[4:8]
         self.data_transfer_length = struct.unpack('<I', bytestring[8:12])[0]
-        self.flags = int(bytestring[12])
-        self.lun = int(bytestring[13] & 0x0f)
-        self.cb_length = int(bytestring[14] & 0x1f)
+        self.flags = struct.unpack('<B', bytestring[12:13])[0]
+        self.lun = struct.unpack('<B', bytestring[13:14])[0] & 0x0f
+        self.cb_length = struct.unpack('<B', bytestring[14:15])[0] & 0x1f
         # self.cb = bytestring[15:15+self.cb_length]
         self.cb = bytestring[15:]
 
