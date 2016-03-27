@@ -41,7 +41,6 @@ class USBInterface(USBBaseActor):
             e.set_interface(self)
 
         self.device_class = None
-        self.device_vendor = None
 
     def set_configuration(self, config):
         self.configuration = config

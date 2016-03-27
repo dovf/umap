@@ -33,6 +33,8 @@ class USBDevice(USBBaseActor):
         self.product_id = product_id
         self.device_rev = device_rev
 
+        self.device_vendor = None
+
         self.manufacturer_string_id = self.get_string_id(manufacturer_string)
         self.product_string_id = self.get_string_id(product_string)
         self.serial_number_string_id = self.get_string_id(serial_number_string)
