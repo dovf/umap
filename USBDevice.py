@@ -6,7 +6,7 @@ import traceback
 import struct
 from USB import USB
 from USBBase import USBBaseActor
-from devices.wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBDevice(USBBaseActor):

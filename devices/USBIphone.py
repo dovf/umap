@@ -8,7 +8,7 @@ from USBConfiguration import USBConfiguration
 from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBVendor import USBVendor
-from .wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBIphoneVendor(USBVendor):

@@ -3,7 +3,7 @@
 # Contains class definition for USBEndpoint.
 from struct import pack
 from USBBase import USBBaseActor
-from devices.wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBEndpoint(USBBaseActor):

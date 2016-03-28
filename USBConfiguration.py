@@ -3,7 +3,7 @@
 # Contains class definition for USBConfiguration.
 from struct import pack
 from USBBase import USBBaseActor
-from devices.wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBConfiguration(USBBaseActor):

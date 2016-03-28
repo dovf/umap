@@ -8,7 +8,7 @@ from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBVendor import USBVendor
 from USBClass import USBClass
-from .wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBFtdiVendor(USBVendor):

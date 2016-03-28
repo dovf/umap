@@ -16,7 +16,7 @@ from USBConfiguration import USBConfiguration
 from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBClass import USBClass
-from .wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class ScsiCmds(object):

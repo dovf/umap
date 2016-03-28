@@ -3,7 +3,7 @@
 # Contains class definition for USBCSInterface.
 from USB import USB
 from USBBase import USBBaseActor
-from devices.wrappers import mutable
+from fuzzing.wrappers import mutable
 import struct
 
 

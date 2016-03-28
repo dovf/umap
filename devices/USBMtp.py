@@ -7,7 +7,7 @@ from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
 from USBVendor import USBVendor
 from USBClass import USBClass
-from .wrappers import mutable
+from fuzzing.wrappers import mutable
 try:
     from mtpdevice.mtp_device import MtpDevice, MtpDeviceInfo
     from mtpdevice.mtp_object import MtpObject

@@ -4,7 +4,7 @@
 
 from USB import USB, interface_class_to_descriptor_type
 from USBBase import USBBaseActor
-from devices.wrappers import mutable
+from fuzzing.wrappers import mutable
 import struct
 
 

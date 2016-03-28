@@ -10,7 +10,7 @@ from USBDevice import USBDevice
 from USBConfiguration import USBConfiguration
 from USBInterface import USBInterface
 from USBEndpoint import USBEndpoint
-from .wrappers import mutable
+from fuzzing.wrappers import mutable
 
 
 class USBCDCClass(USBClass):

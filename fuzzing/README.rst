@@ -3,40 +3,18 @@ Fuzzing with Umap and Kitty
 
 You can perform advanced USB host fuzzing using the Umap-Kitty integration.
 
-Since kitty is not python3 compatible,
-we need to run kitty and umap in two separate environments.
-I use pyenv with two separate shells.
-
 
 Setup (only once)
 -----------------
 
-Install python versions
-+++++++++++++++++++++++
-
-This will take a while ...
+Install Kitty and Katnip
+++++++++++++++++++++++++
 
 ::
 
-    $ pyenv install 3.4.4
-    $ pyenv install 2.7.9
-
-Install kitty on python3 environment
-++++++++++++++++++++++++++++++++++++
-
-::
-
-    $ pyenv shell 3.4.4
-    $ pip install git+https://github.com/cisco-sas/kitty.git#egg=kitty
-
-Install kitty and katnip on python2 environment
-+++++++++++++++++++++++++++++++++++++++++++++++
-
-::
-
-    $ pyenv shell 2.7.9
-    $ pip install git+https://github.com/cisco-sas/kitty.git#egg=kitty
+    $ pip install kittyfuzzer
     $ pip install git+https://github.com/cisco-sas/katnip.git#egg=katnip
+
 
 Usage
 -----
@@ -50,8 +28,8 @@ Step #1 - Connect facedancer
 ++++++++++++++++++++++++++++
 
 Connect the facedancer to the computer and the target.
-We will assume for now that the facedancer appears on your machine as
-**/dev/ttyUSB0** device.
+We will assume for now that the facedancer appears on your machine
+as **/dev/ttyUSB0** device.
 
 Step #2 - Run the fuzzer
 ++++++++++++++++++++++++
@@ -60,9 +38,8 @@ The fuzzer should start first, and wait for the umap stack.
 
 ::
 
-    $ pyenv shell 2.7.9
-    $ cd <umap-dir>
-    $ ./fuzzer.py
+    $ cd <umap-dir>/fuzzing
+    $ ./fuzzer.py --type=enumeration
 
 Step #3 - Start the stack
 +++++++++++++++++++++++++
@@ -73,7 +50,6 @@ We also tell umap to emulate a keyboard.
 
 ::
 
-    $ pyenv shell 3.4.4
     $ cd <umap-dir>
     $ ./umap_stack.py fuzz --port /dev/ttyUSB0  --device keyboard
 
