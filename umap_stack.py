@@ -187,7 +187,17 @@ def kmap_list(options):
                 print(subclass)
 
 
+def print_start_message():
+    print('''
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!   This is an experimental utility, it will probably be   !!
+!!   changed in the official umap2                          !!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+''')
+
+
 def main():
+    print_start_message()
     options = docopt.docopt(__doc__)
     if options['list']:
         kmap_list(options)
