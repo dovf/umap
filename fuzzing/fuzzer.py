@@ -72,9 +72,9 @@ class UmapController(ClientController):
         open(path, 'a').close()
         while os.path.isfile(path):
             time.sleep(0.01)
+            count += 1
             if count % 1000 == 0:
                 self.logger.warning('still waiting for umap_stack to remove the file %s' % path)
-            count += 1
 
 
 def get_model(options):
