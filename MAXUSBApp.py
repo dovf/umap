@@ -219,12 +219,20 @@ class MAXUSBApp(FacedancerApp):
 
     def check_connection_commands(self):
         '''
-        :return: whether perform reconnection
+        :return: whether performed reconnection
         '''
-        if self.should_reconnect():
-            dev = self.connected_device
+        dev = self.connected_device
+        if self.should_disconnect():
             self.disconnect()
-            time.sleep(0.2)
+            self.clear_disconnect_trigger()
+            # wait for reconnection request; no point in returning to service_irqs loop while not connected!
+            while not self.should_reconnect():
+                self.clear_disconnect_trigger() # be robust to additional disconnect requests
+                time.sleep(0.1)
+            # now that we received a reconnect request, flow into the handling of it...
+        # be robust to reconnection requests, whether received after a disconnect request, or standalone
+        # (not sure this is right, might be better to *not* be robust in the face of possible misuse?)
+        if self.should_reconnect():
             self.connect(dev)
             self.clear_reconnect_trigger()
             return True
@@ -238,6 +246,17 @@ class MAXUSBApp(FacedancerApp):
 
     def clear_reconnect_trigger(self):
         trigger = '/tmp/umap_kitty/trigger_reconnect'
+        if os.path.isfile(trigger):
+            os.remove(trigger)
+
+    def should_disconnect(self):
+        if self.fuzzer:
+            if os.path.isfile('/tmp/umap_kitty/trigger_disconnect'):
+                return True
+        return False
+
+    def clear_disconnect_trigger(self):
+        trigger = '/tmp/umap_kitty/trigger_disconnect'
         if os.path.isfile(trigger):
             os.remove(trigger)
 
