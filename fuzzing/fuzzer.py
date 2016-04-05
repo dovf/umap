@@ -10,7 +10,7 @@ Options:
 Possible fuzzing types: enmeration, smartcard, mass-storage
 
 This example stores the mutations in files under ./tmp/
-It also demonstrate how to user kitty fuzzer command line options.
+It also demonstrate how to use kitty fuzzer command line options.
 '''
 import docopt
 from kitty.remote.rpc import RpcServer
