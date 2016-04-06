@@ -12,11 +12,13 @@ class UmapController(ClientController):
     Signal the Umap to disconnect / reconnect using files.
     '''
 
-    def __init__(self):
+    def __init__(self, pre_disconnect_delay=0.0, post_disconnect_delay=0.0):
         super(UmapController, self).__init__('UmapController')
         self.trigger_dir = '/tmp/umap_kitty'
         self.connect_file = 'trigger_reconnect'
         self.disconnect_file = 'trigger_disconnect'
+        self.pre_disconnect_delay = pre_disconnect_delay
+        self.post_disconnect_delay = post_disconnect_delay
 
     def del_file(self, filename):
         path = os.path.join(self.trigger_dir, filename)
@@ -56,4 +58,13 @@ class UmapController(ClientController):
             count += 1
             if count % 1000 == 0:
                 self.logger.warning('still waiting for umap_stack to remove the file %s' % path)
+
+    def post_test(self):
+        super(UmapController, self).post_test()
+        if self.pre_disconnect_delay:
+            time.sleep(self.pre_disconnect_delay)
+        self.trigger_disconnect()
+        if self.post_disconnect_delay:
+            time.sleep(self.post_disconnect_delay)
+        # reconnection will be handled when trigger() is called by the base class after pre_test
 

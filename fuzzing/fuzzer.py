@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 '''
 Usage:
-    ./fuzzer.py --type=<fuzzing_type> [--kitty-options=<kitty-options>]
+    ./fuzzer.py --type=<fuzzing_type> [--disconnect-delays=<pre,post>] [--kitty-options=<kitty-options>]
 
 Options:
     -k --kitty-options <kitty-options>  options for the kitty fuzzer, use --kitty-options=--help to get a full list
     -t --type <fuzzing_type>            type of fuzzing to perform
+    --disconnect-delays=<pre,post>      number of seconds to wait in the post_test before and after disconnecting
+                                        the device (might be necessary in order for failures to be matched with
+                                        the correct test)   [default: 0.0,0.0]
 
 Possible fuzzing types: enmeration, smartcard, mass-storage
 
@@ -56,6 +59,14 @@ def get_model(options):
         raise Exception(msg)
     return model
 
+def get_controller(options):
+    try:
+        pre_disconnect_delay, post_disconnect_delay = \
+            [float(f) for f in options['--disconnect-delays'].split(',')]
+    except ValueError:
+        msg = 'Please specify the --disconnect_delays as two comma-separated floats'
+        raise Exception(msg)
+    return UmapController(pre_disconnect_delay,post_disconnect_delay)
 
 def main():
     options = docopt.docopt(__doc__)
@@ -63,7 +74,7 @@ def main():
     fuzzer.set_interface(WebInterface())
 
     target = ClientTarget(name='USBTarget')
-    target.set_controller(UmapController())
+    target.set_controller(get_controller(options))
     target.set_mutation_server_timeout(10)
 
     model = get_model(options)
