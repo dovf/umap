@@ -1,16 +1,19 @@
 #!/usr/bin/env python
 '''
 Usage:
-    ./fuzzer.py --type=<fuzzing_type> [--kitty-options=<kitty-options>]
+    ./fuzzer.py --type=<fuzzing_type> [--disconnect-delays=<pre,post>] [--kitty-options=<kitty-options>]
 
 Options:
     -k --kitty-options <kitty-options>  options for the kitty fuzzer, use --kitty-options=--help to get a full list
     -t --type <fuzzing_type>            type of fuzzing to perform
+    --disconnect-delays=<pre,post>      number of seconds to wait in the post_test before and after disconnecting
+                                        the device (might be necessary in order for failures to be matched with
+                                        the correct test)   [default: 0.0,0.0]
 
 Possible fuzzing types: enmeration, smartcard, mass-storage
 
 This example stores the mutations in files under ./tmp/
-It also demonstrate how to user kitty fuzzer command line options.
+It also demonstrate how to use kitty fuzzer command line options.
 '''
 import docopt
 from kitty.remote.rpc import RpcServer
@@ -19,62 +22,9 @@ from kitty.targets import ClientTarget
 from kitty.interfaces import WebInterface
 from kitty.model import GraphModel
 
-import os
-import time
-from kitty.controllers import ClientController
 from katnip.templates.usb import *
 
-
-class UmapController(ClientController):
-    '''
-    Trigger a USB reconnection -
-    Signal the Umap to disconnect / reconnect using files.
-    '''
-
-    def __init__(self):
-        super(UmapController, self).__init__('UmapController')
-        self.trigger_dir = '/tmp/umap_kitty'
-        self.connect_file = 'trigger_reconnect'
-        self.disconnect_file = 'trigger_disconnect'
-
-    def del_file(self, filename):
-        path = os.path.join(self.trigger_dir, filename)
-        if os.path.isfile(path):
-            os.remove(path)
-
-    def cleanup_triggers(self):
-        if not os.path.isdir(self.trigger_dir):
-            if not os.path.exists(self.trigger_dir):
-                os.mkdir(self.trigger_dir)
-        self.del_file(self.connect_file)
-        self.del_file(self.disconnect_file)
-
-    def setup(self):
-        super(UmapController, self).setup()
-        self.cleanup_triggers()
-
-    def trigger_connect(self):
-        self.logger.info('trigger reconnection')
-        self.do(self.connect_file)
-
-    def trigger_disconnect(self):
-        self.logger.info('trigger disconnection')
-        self.do(self.disconnect_file)
-
-    def trigger(self):
-        self.trigger_disconnect()
-        time.sleep(0.2)
-        self.trigger_connect()
-
-    def do(self, filename):
-        count = 0
-        path = os.path.join(self.trigger_dir, filename)
-        open(path, 'a').close()
-        while os.path.isfile(path):
-            time.sleep(0.01)
-            count += 1
-            if count % 1000 == 0:
-                self.logger.warning('still waiting for umap_stack to remove the file %s' % path)
+from controller import UmapController
 
 
 def get_model(options):
@@ -109,6 +59,14 @@ def get_model(options):
         raise Exception(msg)
     return model
 
+def get_controller(options):
+    try:
+        pre_disconnect_delay, post_disconnect_delay = \
+            [float(f) for f in options['--disconnect-delays'].split(',')]
+    except ValueError:
+        msg = 'Please specify the --disconnect_delays as two comma-separated floats'
+        raise Exception(msg)
+    return UmapController(pre_disconnect_delay,post_disconnect_delay)
 
 def main():
     options = docopt.docopt(__doc__)
@@ -116,7 +74,7 @@ def main():
     fuzzer.set_interface(WebInterface())
 
     target = ClientTarget(name='USBTarget')
-    target.set_controller(UmapController())
+    target.set_controller(get_controller(options))
     target.set_mutation_server_timeout(10)
 
     model = get_model(options)
