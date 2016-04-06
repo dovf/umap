@@ -59,6 +59,10 @@ class UmapController(ClientController):
             if count % 1000 == 0:
                 self.logger.warning('still waiting for umap_stack to remove the file %s' % path)
 
+    def pre_test(self, test_number):
+        self.trigger_disconnect()
+        super(UmapController, self).pre_test(test_number)
+
     def post_test(self):
         super(UmapController, self).post_test()
         if self.pre_disconnect_delay:
