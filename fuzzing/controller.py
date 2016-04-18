@@ -17,6 +17,7 @@ class UmapController(ClientController):
         self.trigger_dir = '/tmp/umap_kitty'
         self.connect_file = 'trigger_reconnect'
         self.disconnect_file = 'trigger_disconnect'
+        self.heartbeat_file = 'heartbeat'
         self.pre_disconnect_delay = pre_disconnect_delay
         self.post_disconnect_delay = post_disconnect_delay
 
@@ -31,6 +32,7 @@ class UmapController(ClientController):
                 os.mkdir(self.trigger_dir)
         self.del_file(self.connect_file)
         self.del_file(self.disconnect_file)
+        self.del_file(self.heartbeat_file)
 
     def setup(self):
         super(UmapController, self).setup()
@@ -58,6 +60,17 @@ class UmapController(ClientController):
             count += 1
             if count % 1000 == 0:
                 self.logger.warning('still waiting for umap_stack to remove the file %s' % path)
+
+    def get_last_heartbeat(self):
+        '''
+        Return the time of the latest heartbeat received from the victim stack
+        (via umap_stack).
+        If no responses have ever been received from the victim, returns 0.
+        '''
+        heartbeat_file = os.path.join(self.trigger_dir, self.heartbeat_file)
+        if not os.path.exists(heartbeat_file):
+            return 0
+        return os.path.getmtime(heartbeat_file)
 
     def pre_test(self, test_number):
         self.trigger_disconnect()

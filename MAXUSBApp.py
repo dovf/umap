@@ -260,6 +260,11 @@ class MAXUSBApp(FacedancerApp):
         if os.path.isfile(trigger):
             os.remove(trigger)
 
+    def send_heartbeat(self):
+        heartbeat_file = '/tmp/umap_kitty/heartbeat'
+        with open(heartbeat_file, 'a'):
+            os.utime(heartbeat_file, None)
+
     def service_irqs(self):
         count = 0
         tmp_irq = 0
@@ -270,6 +275,7 @@ class MAXUSBApp(FacedancerApp):
             if irq == tmp_irq:
                 count += 1
             else:
+                self.send_heartbeat()
                 count = 0
 
             if count == 10000 and self.mode == 2:  # This needs to be configurable
