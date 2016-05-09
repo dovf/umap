@@ -262,8 +262,9 @@ class MAXUSBApp(FacedancerApp):
 
     def send_heartbeat(self):
         heartbeat_file = '/tmp/umap_kitty/heartbeat'
-        with open(heartbeat_file, 'a'):
-            os.utime(heartbeat_file, None)
+        if os.path.isdir(os.path.dirname(heartbeat_file)):
+            with open(heartbeat_file, 'a'):
+                os.utime(heartbeat_file, None)
 
     def service_irqs(self):
         count = 0
