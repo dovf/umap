@@ -63,11 +63,11 @@ class USBMassStorageClass(USBClass):
             0xFE: self.handle_get_max_lun,
         }
 
-    @mutable('bulk_only_mass_storage_reset_response')
+    @mutable('msc_bulk_only_mass_storage_reset_response')
     def handle_bulk_only_mass_storage_reset(self, req):
         return b''
 
-    @mutable('get_max_lun_response')
+    @mutable('msc_get_max_lun_response')
     def handle_get_max_lun(self, req):
         return b'\x00'
 
