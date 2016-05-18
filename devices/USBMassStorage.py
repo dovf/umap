@@ -228,7 +228,7 @@ class USBMassStorageInterface(USBInterface):
     def handle_write_10(self, cbw):
         self.logger.debug("got SCSI Write (10), data: %s" % hexlify(cbw.cb[1:]))
 
-        base_lba = struct.unpack('>I', cbw.cb[1:5])[0]
+        base_lba = struct.unpack('>I', cbw.cb[2:6])[0]
         num_blocks = struct.unpack('>H', cbw.cb[7:9])[0]
 
         self.logger.debug("got SCSI Write (10), lba", base_lba, "+",  num_blocks, "block(s)")
