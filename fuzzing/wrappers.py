@@ -11,7 +11,7 @@ def mutable(stage, silent=False):
             data.update(session_data)
             response = self.get_mutation(stage=stage, data=data)
             try:
-                if response:
+                if response is not None:
                     if not silent:
                         info('Got mutation for stage %s' % stage)
                 else:
