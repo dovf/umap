@@ -47,6 +47,7 @@ def get_model(options):
         model.connect(smartcard_T0APDU_response)
         model.connect(smartcard_XfrBlock_response)
     elif fuzzing_type == 'mass-storage':
+        model.connect(msc_get_max_lun_response)
         model.connect(scsi_inquiry_response)
         model.connect(scsi_mode_sense_10_response)
         model.connect(scsi_mode_sense_6_response)
